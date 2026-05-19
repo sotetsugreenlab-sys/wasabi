@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>わさび栽培記録</title>
+<link rel="apple-touch-icon" href="Saibai%20Cat.png">
+<link rel="icon" href="Saibai%20Cat.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="わさび">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max-width: 480px; margin: 0 auto; }
+
+.page-title { font-size: 20px; font-weight: 600; color: #1a1a1a; text-align: center; margin-bottom: 14px; }
+
+.variety-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.var-tab { flex: 1; padding: 9px 4px; text-align: center; border-radius: 10px; border: 1.5px solid #ccc; background: #fff; font-size: 14px; font-weight: 500; color: #666; cursor: pointer; }
+.var-tab.active { background: #E0F5F4; border-color: #0B7A75; color: #0B7A75; }
+
+.batch-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+.batch-chip { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; background: #fff; font-size: 12px; font-weight: 500; color: #666; cursor: pointer; white-space: nowrap; }
+.batch-chip.active { background: #0B7A75; border-color: #0B7A75; color: #fff; }
+.batch-add { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1.5px dashed #0B7A75; background: #fff; font-size: 12px; color: #0B7A75; cursor: pointer; white-space: nowrap; }
+
+.info-banner { background: #E0F5F4; border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.info-item { font-size: 12px; color: #0B7A75; }
+.info-item strong { font-size: 14px; display: block; color: #1a1a1a; margin-top: 2px; font-weight: 600; }
+.info-edit { margin-left: auto; font-size: 12px; color: #0B7A75; background: none; border: 1px solid #0B7A75; border-radius: 16px; padding: 3px 12px; cursor: pointer; flex-shrink: 0; }
+
+.milestone-banner { border-radius: 10px; padding: 7px 14px; margin-bottom: 12px; font-size: 13px; font-weight: 500; text-align: center; }
+.milestone-banner.arrival { background: #FFF8E1; color: #8A6000; }
+.milestone-banner.transplant { background: #E0F5F4; color: #0B7A75; }
+.milestone-banner.hidden { display: none; }
+
+.nav-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
+.nav-btn { font-size: 22px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0 6px; line-height: 1; }
+.nav-btn:active { color: #1a1a1a; }
+.date-big { font-size: 19px; font-weight: 500; color: #1a1a1a; }
+.back-today { display: block; text-align: center; font-size: 12px; color: #534AB7; background: #EEEDFE; border: none; border-radius: 20px; padding: 3px 14px; cursor: pointer; margin: 0 auto 8px; width: fit-content; }
+
+.sec-label { font-size: 11px; font-weight: 700; color: #0B7A75; margin-bottom: 8px; letter-spacing: 0.06em; }
+
+.staff-chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; background: #fff; font-size: 13px; color: #666; cursor: pointer; }
+.staff-chip.selected { background: #0B7A75; border-color: #0B7A75; color: #fff; font-weight: 500; }
+
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.input-item { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; }
+.input-item label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
+.input-item .input-row { display: flex; align-items: baseline; gap: 4px; }
+.input-item input { flex: 1; min-width: 0; border: none; background: transparent; font-size: 20px; font-weight: 500; color: #1a1a1a; outline: none; width: 100%; -moz-appearance: textfield; }
+.input-item input::-webkit-outer-spin-button,
+.input-item input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input-unit { font-size: 11px; color: #aaa; white-space: nowrap; }
+
+.water-section { background: #f5f5f2; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+.water-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.water-row:last-child { margin-bottom: 0; }
+.water-label { font-size: 13px; color: #555; flex: 0 0 60px; }
+.water-row input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 7px 10px; font-size: 16px; background: #fff; outline: none; min-width: 0; }
+.water-unit { font-size: 12px; color: #aaa; flex: 0 0 18px; }
+
+.photo-section { margin-bottom: 14px; }
+.photo-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+.photo-thumb { position: relative; flex-shrink: 0; }
+.photo-thumb img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; display: block; }
+.photo-del { position: absolute; top: -5px; right: -5px; background: rgba(0,0,0,0.55); border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; line-height: 1; }
+.photo-add { flex-shrink: 0; width: 80px; height: 80px; border: 1.5px dashed #0B7A75; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #0B7A75; background: #E0F5F4; }
+.photo-add .plus { font-size: 24px; line-height: 1; }
+.photo-add .plus-label { font-size: 10px; margin-top: 3px; }
+#photo-input { display: none; }
+
+.memo-box { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: sans-serif; color: #1a1a1a; resize: vertical; min-height: 70px; outline: none; margin-bottom: 16px; }
+
+.save-btn { width: 100%; padding: 14px; background: #0B7A75; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 24px; }
+.save-btn:active { background: #096560; }
+.save-btn.saved { background: #3B6D11; }
+.save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.history-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
+.hist-card { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+.hist-card.active-date { background: #E0F5F4; }
+.hist-date { font-size: 12px; color: #888; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+.hist-date-label { font-weight: 600; color: #1a1a1a; font-size: 14px; }
+.hist-vals { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; margin-bottom: 2px; }
+.hist-val { color: #666; }
+.hist-val strong { color: #1a1a1a; }
+.hist-water { font-size: 12px; color: #0B7A75; margin-top: 3px; }
+.hist-memo { font-size: 12px; color: #777; margin-top: 3px; font-style: italic; }
+.hist-photos { display: flex; gap: 4px; margin-top: 6px; overflow-x: auto; }
+.hist-photos img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.no-history { color: #bbb; font-size: 13px; text-align: center; padding: 1.5rem 0; }
+
+.badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 8px; margin-left: 4px; vertical-align: middle; }
+.badge-arrival { background: #FFF8E1; color: #8A6000; }
+.badge-transplant { background: #E0F5F4; color: #0B7A75; }
+
+.export-section { margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0ed; display: flex; gap: 8px; }
+.export-btn { flex: 1; padding: 11px 8px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; }
+.btn-csv { background: #E0F5F4; color: #0B7A75; border: 1.5px solid #0B7A75; }
+.btn-delete-month { background: #FEF0EE; color: #B84033; border: 1.5px solid #B84033; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+.modal-overlay.hidden { display: none; }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 1.5rem 1rem 2rem; width: 100%; max-width: 480px; }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #0B7A75; }
+.modal-row { margin-bottom: 12px; }
+.modal-row label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
+.modal-row input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 9px 12px; font-size: 15px; outline: none; }
+.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+.modal-cancel { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; background: #fff; font-size: 15px; cursor: pointer; color: #555; }
+.modal-save { flex: 1; padding: 12px; background: #0B7A75; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+.month-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; margin-bottom: 4px; }
+.month-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f5f5f2; border-radius: 8px; }
+.month-item-label { font-weight: 500; color: #1a1a1a; font-size: 14px; }
+.month-item-count { font-size: 12px; color: #888; }
+.month-del-btn { font-size: 12px; color: #B84033; background: #FEF0EE; border: 1px solid #B84033; border-radius: 16px; padding: 3px 10px; cursor: pointer; }
+
+.photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.photo-viewer.hidden { display: none; }
+.photo-viewer img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
+.photo-viewer-close { position: absolute; top: 16px; right: 16px; color: #fff; font-size: 28px; background: none; border: none; cursor: pointer; }
+
+#loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 12px; }
+#loading-overlay.hidden { display: none; }
+#loading-overlay .load-icon { font-size: 36px; }
+#loading-overlay .load-text { font-size: 14px; color: #0B7A75; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="load-icon">🌿</div>
+  <div class="load-text">読み込み中...</div>
+</div>
+
+<div class="page-title">わさび栽培記録</div>
+
+<div class="variety-tabs">
+  <button class="var-tab active" onclick="switchVariety(0)" id="tab-0">飛河</button>
+  <button class="var-tab" onclick="switchVariety(1)" id="tab-1">正緑</button>
+</div>
+
+<div class="batch-row" id="batch-row"></div>
+
+<div class="info-banner">
+  <div class="info-item">苗入荷日<strong id="disp-arrival">-</strong></div>
+  <div class="info-item">移植期間<strong id="disp-transplant">-</strong></div>
+  <div class="info-item">経過日数<strong id="disp-days">-</strong></div>
+  <button class="info-edit" onclick="openSettings()">設定</button>
+</div>
+
+<div class="milestone-banner hidden" id="milestone-banner"></div>
+
+<div class="nav-row">
+  <button class="nav-btn" onclick="navigate(-1)">＜</button>
+  <div class="date-big" id="disp-date"></div>
+  <button class="nav-btn" onclick="navigate(1)">＞</button>
+</div>
+<button class="back-today" onclick="goToday()">今日</button>
+
+<div class="sec-label">計測値（追水前）</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+  <span style="font-size:12px;color:#888;flex-shrink:0">記録時刻</span>
+  <input type="time" id="f-time" style="border:1px solid #e0e0e0;border-radius:8px;padding:5px 10px;font-size:15px;color:#1a1a1a;outline:none;flex:1;">
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+  <span style="font-size:12px;color:#888;flex-shrink:0">担当者</span>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1;" id="staff-chips"></div>
+</div>
+<div class="input-grid">
+  <div class="input-item">
+    <label>室温</label>
+    <div class="input-row">
+      <input type="number" inputmode="decimal" id="f-room-temp" placeholder="22.0">
+      <span class="input-unit">°C</span>
+    </div>
+  </div>
+  <div class="input-item">
+    <label>水温</label>
+    <div class="input-row">
+      <input type="number" inputmode="decimal" id="f-water-temp" placeholder="18.0">
+      <span class="input-unit">°C</span>
+    </div>
+  </div>
+  <div class="input-item">
+    <label>pH</label>
+    <div class="input-row">
+      <input type="number" inputmode="decimal" id="f-ph" placeholder="6.5">
+    </div>
+  </div>
+  <div class="input-item">
+    <label>EC</label>
+    <div class="input-row">
+      <input type="number" inputmode="decimal" id="f-ec" placeholder="1.20">
+      <span class="input-unit">mS/cm</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec-label">追水</div>
+<div class="water-section">
+  <div class="water-row">
+    <span class="water-label">水</span>
+    <input type="number" inputmode="decimal" step="0.1" id="f-water" placeholder="0">
+    <span class="water-unit">L</span>
+  </div>
+  <div class="water-row">
+    <span class="water-label">液肥液</span>
+    <input type="number" inputmode="decimal" step="0.1" id="f-nutrient" placeholder="0">
+    <span class="water-unit">L</span>
+  </div>
+</div>
+
+<div class="sec-label">写真</div>
+<div class="photo-section">
+  <div class="photo-scroll" id="photo-row"></div>
+  <input type="file" id="photo-input" accept="image/*" multiple onchange="addPhotos(this)">
+</div>
+
+<div class="sec-label">メモ</div>
+<textarea class="memo-box" id="f-memo" placeholder="気づいたこと・異常・作業内容など"></textarea>
+
+<button class="save-btn" id="save-btn" onclick="saveLog()">保存する</button>
+
+<div class="history-title">過去の記録</div>
+<div id="history-list"></div>
+
+<div class="export-section">
+  <button class="export-btn btn-csv" onclick="exportCSV()">CSVエクスポート</button>
+  <button class="export-btn btn-delete-month" onclick="openMonthDelete()">月データを削除</button>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">バッチの設定</div>
+    <div class="modal-row"><label>品種名</label><input type="text" id="m-name"></div>
+    <div class="modal-row"><label>苗入荷日</label><input type="date" id="m-arrival"></div>
+    <div class="modal-row"><label>移植開始日</label><input type="date" id="m-transplant-from"></div>
+    <div class="modal-row"><label>移植終了日</label><input type="date" id="m-transplant-to"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeSettings()">キャンセル</button>
+      <button class="modal-save" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- New batch modal -->
+<div class="modal-overlay hidden" id="new-batch-modal">
+  <div class="modal">
+    <div class="modal-title">新しい入荷を追加</div>
+    <div class="modal-row"><label>苗入荷日</label><input type="date" id="nb-arrival"></div>
+    <div class="modal-row"><label>移植開始日</label><input type="date" id="nb-transplant-from"></div>
+    <div class="modal-row"><label>移植終了日</label><input type="date" id="nb-transplant-to"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeNewBatch()">キャンセル</button>
+      <button class="modal-save" onclick="saveNewBatch()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Month delete modal -->
+<div class="modal-overlay hidden" id="month-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:#B84033">月データを削除</div>
+    <p style="font-size:13px;color:#888;margin-bottom:12px">CSVエクスポート後に削除してください。写真も含め完全に消えます。</p>
+    <div class="month-list" id="month-list"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="modal-cancel" onclick="closeMonthDelete()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- Photo viewer -->
+<div class="photo-viewer hidden" id="photo-viewer" onclick="closeViewer()">
+  <button class="photo-viewer-close">✕</button>
+  <img id="viewer-img" src="" alt="">
+</div>
+
+<script>
+// ===== CONFIG =====
+const SUPABASE_URL = 'https://pqoexlikdviqqgdnzuud.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_9KR8h4be2Q5-4ux6g55hSg_Jkv9UYBM';
+// ==================
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STAFF = ['まき', '狩俣', '下田', 'れみ', '鷲山'];
+
+let currentVariety = 0;
+let currentBatch = 0;
+let currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0);
+let currentPhotos = [];
+let currentStaff = '';
+let isSaving = false;
+
+let data = [
+  { name: '飛河', batches: [] },
+  { name: '正緑', batches: [] }
+];
+
+// ---- Helpers ----
+
+function showLoading(show) {
+  document.getElementById('loading-overlay').classList.toggle('hidden', !show);
+}
+
+function getBatch() {
+  return data[currentVariety].batches[currentBatch];
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtDate(d) {
+  const days = ['日','月','火','水','木','金','土'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日(${days[d.getDay()]})`;
+}
+
+function fmtShort(iso) {
+  if (!iso) return '未設定';
+  const [,m,d] = iso.split('-');
+  return `${parseInt(m)}/${parseInt(d)}`;
+}
+
+function fmtRange(from, to) {
+  if (!from) return '未設定';
+  if (!to || to === from) return fmtShort(from);
+  return `${fmtShort(from)}〜${fmtShort(to)}`;
+}
+
+function daysSince(iso) {
+  if (!iso) return null;
+  const start = new Date(iso);
+  start.setHours(0,0,0,0);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.floor((today - start) / 86400000);
+}
+
+function batchLabel(batch, idx) {
+  const num = `第${idx+1}回`;
+  return batch.arrivalDate ? `${num} (${fmtShort(batch.arrivalDate)}入荷)` : num;
+}
+
+function getMilestone(b, key) {
+  const isArrival = !!b.arrivalDate && b.arrivalDate === key;
+  const inTransplant = b.transplantFrom
+    ? (b.transplantTo ? key >= b.transplantFrom && key <= b.transplantTo : b.transplantFrom === key)
+    : false;
+  return { isArrival, inTransplant };
+}
+
+// ---- Data loading ----
+
+async function init() {
+  showLoading(true);
+  try {
+    await loadBatches();
+    await loadLogsForBatch();
+  } catch (e) {
+    alert('データの読み込みに失敗しました。\n通信環境を確認してください。\n' + e.message);
+  }
+  showLoading(false);
+  render();
+}
+
+async function loadBatches() {
+  const { data: rows, error } = await sb
+    .from('wasabi_batches')
+    .select('*')
+    .order('variety_idx').order('batch_idx');
+  if (error) throw error;
+
+  let source = rows;
+  if (source.length === 0) {
+    const defaults = [
+      { variety_idx: 0, batch_idx: 0, variety_name: '飛河', arrival_date: '2026-05-13', transplant_from: '2026-05-13', transplant_to: '2026-05-15' },
+      { variety_idx: 1, batch_idx: 0, variety_name: '正緑', arrival_date: '2026-05-13', transplant_from: '2026-05-13', transplant_to: '2026-05-15' }
+    ];
+    const { data: inserted, error: iErr } = await sb.from('wasabi_batches').insert(defaults).select();
+    if (iErr) throw iErr;
+    source = inserted;
+  }
+
+  data[0].batches = [];
+  data[1].batches = [];
+  source.forEach(r => {
+    data[r.variety_idx].name = r.variety_name;
+    data[r.variety_idx].batches[r.batch_idx] = {
+      dbId: r.id,
+      arrivalDate: r.arrival_date || '',
+      transplantFrom: r.transplant_from || '',
+      transplantTo: r.transplant_to || '',
+      logs: {}
+    };
+  });
+  data.forEach(v => { v.batches = v.batches.filter(Boolean); });
+}
+
+async function loadLogsForBatch() {
+  const { data: rows, error } = await sb
+    .from('wasabi_logs')
+    .select('*')
+    .eq('variety_idx', currentVariety)
+    .eq('batch_idx', currentBatch)
+    .order('log_date');
+  if (error) throw error;
+
+  const b = getBatch();
+  if (!b) return;
+  b.logs = {};
+  rows.forEach(r => {
+    b.logs[r.log_date] = {
+      time: r.log_time || '',
+      staff: r.staff || '',
+      roomTemp: r.room_temp || '',
+      waterTemp: r.water_temp || '',
+      ph: r.ph || '',
+      ec: r.ec || '',
+      water: r.water || '',
+      nutrient: r.nutrient || '',
+      memo: r.memo || '',
+      photos: r.photos || [],
+      savedAt: r.saved_at
+    };
+  });
+}
+
+// ---- Navigation ----
+
+async function switchVariety(idx) {
+  currentVariety = idx;
+  currentBatch = 0;
+  document.querySelectorAll('.var-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  showLoading(true);
+  try { await loadLogsForBatch(); } catch(e) { alert('読み込み失敗: ' + e.message); }
+  showLoading(false);
+  render();
+}
+
+async function switchBatch(idx) {
+  currentBatch = idx;
+  showLoading(true);
+  try { await loadLogsForBatch(); } catch(e) { alert('読み込み失敗: ' + e.message); }
+  showLoading(false);
+  render();
+}
+
+function navigate(dir) {
+  currentDate = new Date(currentDate.getTime() + dir * 86400000);
+  render();
+}
+
+function goToday() {
+  currentDate = new Date();
+  currentDate.setHours(0,0,0,0);
+  render();
+}
+
+// ---- Render ----
+
+function render() {
+  const v = data[currentVariety];
+  const b = getBatch();
+
+  document.getElementById('tab-0').textContent = data[0].name || '飛河';
+  document.getElementById('tab-1').textContent = data[1].name || '正緑';
+
+  const batchRow = document.getElementById('batch-row');
+  batchRow.innerHTML = (v.batches || []).map((batch, i) =>
+    `<button class="batch-chip${i===currentBatch?' active':''}" onclick="switchBatch(${i})">${batchLabel(batch,i)}</button>`
+  ).join('') + `<button class="batch-add" onclick="openNewBatch()">＋ 新しい入荷</button>`;
+
+  if (b) {
+    document.getElementById('disp-arrival').textContent = fmtShort(b.arrivalDate);
+    document.getElementById('disp-transplant').textContent = fmtRange(b.transplantFrom, b.transplantTo);
+    const days = daysSince(b.arrivalDate);
+    document.getElementById('disp-days').textContent = days !== null ? `${days}日目` : '-';
+  }
+
+  document.getElementById('disp-date').textContent = fmtDate(currentDate);
+
+  const key = dateKey(currentDate);
+  const log = b?.logs[key] || {};
+  const todayKey = dateKey(new Date());
+  const now = new Date();
+  const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  document.getElementById('f-time').value = log.time ?? (key === todayKey ? nowTime : '');
+  document.getElementById('f-room-temp').value = log.roomTemp ?? '';
+  document.getElementById('f-water-temp').value = log.waterTemp ?? '';
+  document.getElementById('f-ph').value = log.ph ?? '';
+  document.getElementById('f-ec').value = log.ec ?? '';
+  document.getElementById('f-water').value = log.water ?? '';
+  document.getElementById('f-nutrient').value = log.nutrient ?? '';
+  document.getElementById('f-memo').value = log.memo ?? '';
+
+  currentPhotos = [...(log.photos || [])];
+  currentStaff = log.staff ?? '';
+  renderPhotos();
+  renderStaffChips();
+  if (b) renderMilestoneBanner(b, key);
+  renderHistory();
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '保存する';
+  btn.classList.remove('saved');
+  btn.disabled = false;
+}
+
+function renderStaffChips() {
+  document.getElementById('staff-chips').innerHTML = STAFF.map(name =>
+    `<button class="staff-chip${currentStaff===name?' selected':''}" onclick="selectStaff('${name}')">${name}</button>`
+  ).join('');
+}
+
+function selectStaff(name) {
+  currentStaff = currentStaff === name ? '' : name;
+  renderStaffChips();
+}
+
+function renderMilestoneBanner(b, key) {
+  const el = document.getElementById('milestone-banner');
+  const { isArrival, inTransplant } = getMilestone(b, key);
+  if (isArrival && inTransplant) { el.className = 'milestone-banner arrival'; el.textContent = '苗入荷日 / 移植開始日'; }
+  else if (isArrival)  { el.className = 'milestone-banner arrival';   el.textContent = '苗入荷日'; }
+  else if (inTransplant) { el.className = 'milestone-banner transplant'; el.textContent = '移植期間'; }
+  else { el.className = 'milestone-banner hidden'; el.textContent = ''; }
+}
+
+function renderPhotos() {
+  const row = document.getElementById('photo-row');
+  row.innerHTML = '';
+  currentPhotos.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    const img = document.createElement('img');
+    img.src = src;
+    img.onclick = () => openViewer(src);
+    const del = document.createElement('button');
+    del.className = 'photo-del';
+    del.textContent = '×';
+    del.onclick = () => { currentPhotos.splice(i,1); renderPhotos(); };
+    div.appendChild(img); div.appendChild(del);
+    row.appendChild(div);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'photo-add';
+  addBtn.innerHTML = '<div class="plus">＋</div><div class="plus-label">写真</div>';
+  addBtn.onclick = () => document.getElementById('photo-input').click();
+  row.appendChild(addBtn);
+}
+
+function addPhotos(input) {
+  const files = Array.from(input.files);
+  let done = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      resizeImage(e.target.result, 600, 0.55, dataUrl => {
+        currentPhotos.push(dataUrl);
+        if (++done === files.length) renderPhotos();
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function resizeImage(dataUrl, maxW, quality, cb) {
+  const img = new Image();
+  img.onload = () => {
+    const scale = Math.min(1, maxW / img.width);
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+
+function renderHistory() {
+  const b = getBatch();
+  const todayKey = dateKey(currentDate);
+  const keys = Object.keys(b?.logs || {}).sort().reverse();
+  const el = document.getElementById('history-list');
+  if (keys.length === 0) { el.innerHTML = '<div class="no-history">まだ記録がありません</div>'; return; }
+  el.innerHTML = keys.map(k => {
+    const log = b.logs[k];
+    const [,m,d] = k.split('-');
+    const { isArrival, inTransplant } = getMilestone(b, k);
+    const badges = (isArrival ? '<span class="badge badge-arrival">入荷</span>' : '')
+                 + (inTransplant ? '<span class="badge badge-transplant">移植</span>' : '');
+    const vals = [];
+    if (log.roomTemp) vals.push(`室温<strong>${log.roomTemp}°</strong>`);
+    if (log.waterTemp) vals.push(`水温<strong>${log.waterTemp}°</strong>`);
+    if (log.ph)       vals.push(`pH<strong>${log.ph}</strong>`);
+    if (log.ec)       vals.push(`EC<strong>${log.ec}</strong>`);
+    const waterParts = [];
+    if (log.water    && parseFloat(log.water)    > 0) waterParts.push(`水 ${log.water}L`);
+    if (log.nutrient && parseFloat(log.nutrient) > 0) waterParts.push(`液肥 ${log.nutrient}L`);
+    const photosHtml = (log.photos||[]).map(src =>
+      `<img src="${src}" onclick="openViewer('${src.replace(/'/g,"\\'")}',event)">`).join('');
+    return `<div class="hist-card${k===todayKey?' active-date':''}" onclick="jumpToDate('${k}')">
+      <div class="hist-date">
+        <span class="hist-date-label">${parseInt(m)}/${parseInt(d)}${badges}</span>
+        <span>${[log.time, log.staff].filter(Boolean).join(' · ')}</span>
+      </div>
+      ${vals.length?`<div class="hist-vals">${vals.map(s=>`<span class="hist-val">${s}</span>`).join('')}</div>`:''}
+      ${waterParts.length?`<div class="hist-water">追水: ${waterParts.join(' / ')}</div>`:''}
+      ${log.memo?`<div class="hist-memo">${escHtml(log.memo)}</div>`:''}
+      ${photosHtml?`<div class="hist-photos">${photosHtml}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function jumpToDate(iso) {
+  const [y,m,d] = iso.split('-').map(Number);
+  currentDate = new Date(y, m-1, d);
+  window.scrollTo({top:0, behavior:'smooth'});
+  render();
+}
+
+// ---- Save ----
+
+async function saveLog() {
+  if (isSaving) return;
+  isSaving = true;
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '保存中...';
+  btn.disabled = true;
+
+  const key = dateKey(currentDate);
+  const logData = {
+    variety_idx: currentVariety,
+    batch_idx: currentBatch,
+    log_date: key,
+    log_time: document.getElementById('f-time').value,
+    staff: currentStaff,
+    room_temp: document.getElementById('f-room-temp').value,
+    water_temp: document.getElementById('f-water-temp').value,
+    ph: document.getElementById('f-ph').value,
+    ec: document.getElementById('f-ec').value,
+    water: document.getElementById('f-water').value,
+    nutrient: document.getElementById('f-nutrient').value,
+    memo: document.getElementById('f-memo').value,
+    photos: currentPhotos,
+    saved_at: new Date().toISOString()
+  };
+
+  try {
+    const { error } = await sb.from('wasabi_logs')
+      .upsert(logData, { onConflict: 'variety_idx,batch_idx,log_date' });
+    if (error) throw error;
+
+    const b = getBatch();
+    b.logs[key] = {
+      time: logData.log_time, staff: logData.staff,
+      roomTemp: logData.room_temp, waterTemp: logData.water_temp,
+      ph: logData.ph, ec: logData.ec,
+      water: logData.water, nutrient: logData.nutrient,
+      memo: logData.memo, photos: currentPhotos, savedAt: logData.saved_at
+    };
+
+    btn.textContent = '保存しました ✓';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = '保存する'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
+    renderHistory();
+  } catch (e) {
+    alert('保存に失敗しました。\n' + e.message);
+    btn.textContent = '保存する';
+    btn.disabled = false;
+  }
+  isSaving = false;
+}
+
+// ---- Settings ----
+
+function openSettings() {
+  const v = data[currentVariety]; const b = getBatch();
+  document.getElementById('modal-title').textContent = `${v.name} ${batchLabel(b, currentBatch)} の設定`;
+  document.getElementById('m-name').value = v.name || '';
+  document.getElementById('m-arrival').value = b.arrivalDate || '';
+  document.getElementById('m-transplant-from').value = b.transplantFrom || '';
+  document.getElementById('m-transplant-to').value = b.transplantTo || '';
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+async function saveSettings() {
+  const v = data[currentVariety]; const b = getBatch();
+  const newName = document.getElementById('m-name').value.trim() || v.name;
+  const newArrival = document.getElementById('m-arrival').value;
+  const newFrom = document.getElementById('m-transplant-from').value;
+  const newTo = document.getElementById('m-transplant-to').value;
+  try {
+    const { error } = await sb.from('wasabi_batches').update({
+      variety_name: newName, arrival_date: newArrival,
+      transplant_from: newFrom, transplant_to: newTo
+    }).eq('id', b.dbId);
+    if (error) throw error;
+    v.name = newName; b.arrivalDate = newArrival; b.transplantFrom = newFrom; b.transplantTo = newTo;
+    closeSettings(); render();
+  } catch (e) { alert('保存失敗: ' + e.message); }
+}
+
+// ---- New batch ----
+
+function openNewBatch() {
+  document.getElementById('nb-arrival').value = '';
+  document.getElementById('nb-transplant-from').value = '';
+  document.getElementById('nb-transplant-to').value = '';
+  document.getElementById('new-batch-modal').classList.remove('hidden');
+}
+function closeNewBatch() { document.getElementById('new-batch-modal').classList.add('hidden'); }
+
+async function saveNewBatch() {
+  const arrival = document.getElementById('nb-arrival').value;
+  const from = document.getElementById('nb-transplant-from').value;
+  const to = document.getElementById('nb-transplant-to').value;
+  const newIdx = data[currentVariety].batches.length;
+  try {
+    const { data: row, error } = await sb.from('wasabi_batches').insert({
+      variety_idx: currentVariety, batch_idx: newIdx,
+      variety_name: data[currentVariety].name,
+      arrival_date: arrival, transplant_from: from, transplant_to: to
+    }).select().single();
+    if (error) throw error;
+    data[currentVariety].batches.push({ dbId: row.id, arrivalDate: arrival, transplantFrom: from, transplantTo: to, logs: {} });
+    currentBatch = newIdx;
+    closeNewBatch(); render();
+  } catch (e) { alert('追加失敗: ' + e.message); }
+}
+
+// ---- Photo viewer ----
+
+function openViewer(src, e) { if (e) e.stopPropagation(); document.getElementById('viewer-img').src = src; document.getElementById('photo-viewer').classList.remove('hidden'); }
+function closeViewer() { document.getElementById('photo-viewer').classList.add('hidden'); }
+
+// ---- CSV export ----
+
+function exportCSV() {
+  const BOM = '\uFEFF';
+  const header = '品種,バッチ,日付,時刻,担当者,室温(°C),水温(°C),pH,EC(mS/cm),追水-水(L),追水-液肥(L),メモ';
+  const rows = [];
+  data.forEach(v => {
+    v.batches.forEach((b, bi) => {
+      Object.keys(b.logs).sort().forEach(k => {
+        const log = b.logs[k];
+        const memo = (log.memo||'').replace(/"/g,'""');
+        rows.push([v.name, `第${bi+1}回`, k, log.time, log.staff,
+          log.roomTemp, log.waterTemp, log.ph, log.ec,
+          log.water, log.nutrient, `"${memo}"`].join(','));
+      });
+    });
+  });
+  if (!rows.length) { alert('記録がありません'); return; }
+  const blob = new Blob([BOM + header + '\n' + rows.join('\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  const now = new Date();
+  a.download = `wasabi_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ---- Month delete ----
+
+function openMonthDelete() {
+  const b = getBatch();
+  const months = {};
+  Object.keys(b?.logs||{}).forEach(k => { const ym = k.slice(0,7); months[ym] = (months[ym]||0)+1; });
+  const keys = Object.keys(months).sort().reverse();
+  const el = document.getElementById('month-list');
+  el.innerHTML = keys.length
+    ? keys.map(ym => { const [y,m] = ym.split('-'); return `<div class="month-item"><div><div class="month-item-label">${y}年${parseInt(m)}月</div><div class="month-item-count">${months[ym]}件</div></div><button class="month-del-btn" onclick="deleteMonth('${ym}')">削除</button></div>`; }).join('')
+    : '<div style="color:#bbb;font-size:13px;text-align:center;padding:1rem">記録がありません</div>';
+  document.getElementById('month-modal').classList.remove('hidden');
+}
+function closeMonthDelete() { document.getElementById('month-modal').classList.add('hidden'); }
+
+async function deleteMonth(ym) {
+  const [y,m] = ym.split('-');
+  if (!confirm(`${y}年${parseInt(m)}月のデータを削除しますか？\n写真も含め元に戻せません。`)) return;
+  try {
+    const { error } = await sb.from('wasabi_logs').delete()
+      .eq('variety_idx', currentVariety).eq('batch_idx', currentBatch)
+      .gte('log_date', `${ym}-01`).lte('log_date', `${ym}-31`);
+    if (error) throw error;
+    const b = getBatch();
+    Object.keys(b.logs).filter(k=>k.startsWith(ym)).forEach(k=>delete b.logs[k]);
+    openMonthDelete(); renderHistory();
+  } catch (e) { alert('削除失敗: ' + e.message); }
+}
+
+// ---- Modal overlay close ----
+['settings-modal','new-batch-modal','month-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id===id) document.getElementById(id).classList.add('hidden'); });
+});
+
+init();
+</script>
+</body>
+</html>
