@@ -15,6 +15,46 @@ body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max
 
 .page-title { font-size: 20px; font-weight: 600; color: #1a1a1a; text-align: center; margin-bottom: 14px; }
 
+.nav-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
+.nav-btn { font-size: 22px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0 6px; line-height: 1; }
+.nav-btn:active { color: #1a1a1a; }
+.date-big { font-size: 19px; font-weight: 500; color: #1a1a1a; }
+.back-today { display: block; text-align: center; font-size: 12px; color: #534AB7; background: #EEEDFE; border: none; border-radius: 20px; padding: 3px 14px; cursor: pointer; margin: 0 auto 16px; width: fit-content; }
+
+.sec-block { background: #f9f9f7; border-radius: 14px; padding: 14px 14px 16px; margin-bottom: 16px; }
+.sec-title { font-size: 13px; font-weight: 700; color: #0B7A75; margin-bottom: 12px; letter-spacing: 0.06em; }
+.sec-title-variety { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 12px; letter-spacing: 0.06em; }
+
+.sec-label { font-size: 11px; font-weight: 700; color: #0B7A75; margin-bottom: 8px; letter-spacing: 0.06em; }
+
+.time-staff-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.time-staff-row label { font-size: 12px; color: #888; flex-shrink: 0; }
+input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 10px; font-size: 15px; color: #1a1a1a; outline: none; flex: 1; background: #fff; }
+
+.staff-chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; background: #fff; font-size: 13px; color: #666; cursor: pointer; }
+.staff-chip.selected { background: #0B7A75; border-color: #0B7A75; color: #fff; font-weight: 500; }
+
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.input-item { background: #fff; border-radius: 10px; padding: 10px 12px; border: 1px solid #ebebeb; }
+.input-item label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
+.input-item .input-row { display: flex; align-items: baseline; gap: 4px; }
+.input-item input { flex: 1; min-width: 0; border: none; background: transparent; font-size: 20px; font-weight: 500; color: #1a1a1a; outline: none; width: 100%; -moz-appearance: textfield; }
+.input-item input::-webkit-outer-spin-button,
+.input-item input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input-unit { font-size: 11px; color: #aaa; white-space: nowrap; }
+
+.water-section { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid #ebebeb; }
+.water-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.water-row:last-child { margin-bottom: 0; }
+.water-label { font-size: 13px; color: #555; flex: 0 0 60px; }
+.water-row input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 7px 10px; font-size: 16px; background: #fff; outline: none; min-width: 0; }
+.water-unit { font-size: 12px; color: #aaa; flex: 0 0 18px; }
+
+.save-btn { width: 100%; padding: 14px; background: #0B7A75; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.save-btn:active { background: #096560; }
+.save-btn.saved { background: #3B6D11; }
+.save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .variety-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
 .var-tab { flex: 1; padding: 9px 4px; text-align: center; border-radius: 10px; border: 1.5px solid #ccc; background: #fff; font-size: 14px; font-weight: 500; color: #666; cursor: pointer; }
 .var-tab.active { background: #E0F5F4; border-color: #0B7A75; color: #0B7A75; }
@@ -34,33 +74,6 @@ body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max
 .milestone-banner.transplant { background: #E0F5F4; color: #0B7A75; }
 .milestone-banner.hidden { display: none; }
 
-.nav-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
-.nav-btn { font-size: 22px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0 6px; line-height: 1; }
-.nav-btn:active { color: #1a1a1a; }
-.date-big { font-size: 19px; font-weight: 500; color: #1a1a1a; }
-.back-today { display: block; text-align: center; font-size: 12px; color: #534AB7; background: #EEEDFE; border: none; border-radius: 20px; padding: 3px 14px; cursor: pointer; margin: 0 auto 8px; width: fit-content; }
-
-.sec-label { font-size: 11px; font-weight: 700; color: #0B7A75; margin-bottom: 8px; letter-spacing: 0.06em; }
-
-.staff-chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; background: #fff; font-size: 13px; color: #666; cursor: pointer; }
-.staff-chip.selected { background: #0B7A75; border-color: #0B7A75; color: #fff; font-weight: 500; }
-
-.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-.input-item { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; }
-.input-item label { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
-.input-item .input-row { display: flex; align-items: baseline; gap: 4px; }
-.input-item input { flex: 1; min-width: 0; border: none; background: transparent; font-size: 20px; font-weight: 500; color: #1a1a1a; outline: none; width: 100%; -moz-appearance: textfield; }
-.input-item input::-webkit-outer-spin-button,
-.input-item input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.input-unit { font-size: 11px; color: #aaa; white-space: nowrap; }
-
-.water-section { background: #f5f5f2; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
-.water-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.water-row:last-child { margin-bottom: 0; }
-.water-label { font-size: 13px; color: #555; flex: 0 0 60px; }
-.water-row input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 7px 10px; font-size: 16px; background: #fff; outline: none; min-width: 0; }
-.water-unit { font-size: 12px; color: #aaa; flex: 0 0 18px; }
-
 .photo-section { margin-bottom: 14px; }
 .photo-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
 .photo-thumb { position: relative; flex-shrink: 0; }
@@ -71,12 +84,7 @@ body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max
 .photo-add .plus-label { font-size: 10px; margin-top: 3px; }
 #photo-input { display: none; }
 
-.memo-box { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: sans-serif; color: #1a1a1a; resize: vertical; min-height: 70px; outline: none; margin-bottom: 16px; }
-
-.save-btn { width: 100%; padding: 14px; background: #0B7A75; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 24px; }
-.save-btn:active { background: #096560; }
-.save-btn.saved { background: #3B6D11; }
-.save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.memo-box { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: sans-serif; color: #1a1a1a; resize: vertical; min-height: 70px; outline: none; margin-bottom: 16px; background: #fff; }
 
 .history-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
 .hist-card { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
@@ -138,93 +146,107 @@ body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max
 
 <div class="page-title">わさび栽培記録</div>
 
-<div class="variety-tabs">
-  <button class="var-tab active" onclick="switchVariety(0)" id="tab-0">飛河</button>
-  <button class="var-tab" onclick="switchVariety(1)" id="tab-1">正緑</button>
-</div>
-
-<div class="batch-row" id="batch-row"></div>
-
-<div class="info-banner">
-  <div class="info-item">苗入荷日<strong id="disp-arrival">-</strong></div>
-  <div class="info-item">移植期間<strong id="disp-transplant">-</strong></div>
-  <div class="info-item">経過日数<strong id="disp-days">-</strong></div>
-  <button class="info-edit" onclick="openSettings()">設定</button>
-</div>
-
-<div class="milestone-banner hidden" id="milestone-banner"></div>
-
 <div class="nav-row">
   <button class="nav-btn" onclick="navigate(-1)">＜</button>
   <div class="date-big" id="disp-date"></div>
   <button class="nav-btn" onclick="navigate(1)">＞</button>
 </div>
-<button class="back-today" onclick="goToday()">今日</button>
+<div id="back-today-wrap"></div>
 
-<div class="sec-label">計測値（追水前）</div>
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-  <span style="font-size:12px;color:#888;flex-shrink:0">記録時刻</span>
-  <input type="time" id="f-time" style="border:1px solid #e0e0e0;border-radius:8px;padding:5px 10px;font-size:15px;color:#1a1a1a;outline:none;flex:1;">
-</div>
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-  <span style="font-size:12px;color:#888;flex-shrink:0">担当者</span>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1;" id="staff-chips"></div>
-</div>
-<div class="input-grid">
-  <div class="input-item">
-    <label>室温</label>
-    <div class="input-row">
-      <input type="number" inputmode="decimal" id="f-room-temp" placeholder="22.0">
-      <span class="input-unit">°C</span>
+<!-- 棚の記録 -->
+<div class="sec-block">
+  <div class="sec-title">🌊 棚の記録</div>
+
+  <div class="time-staff-row">
+    <label>記録時刻</label>
+    <input type="time" id="f-time">
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+    <span style="font-size:12px;color:#888;flex-shrink:0">担当者</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="staff-chips"></div>
+  </div>
+
+  <div class="sec-label">計測値（追水前）</div>
+  <div class="input-grid">
+    <div class="input-item">
+      <label>室温</label>
+      <div class="input-row">
+        <input type="number" inputmode="decimal" id="f-room-temp" placeholder="22.0">
+        <span class="input-unit">°C</span>
+      </div>
+    </div>
+    <div class="input-item">
+      <label>水温</label>
+      <div class="input-row">
+        <input type="number" inputmode="decimal" id="f-water-temp" placeholder="18.0">
+        <span class="input-unit">°C</span>
+      </div>
+    </div>
+    <div class="input-item">
+      <label>pH</label>
+      <div class="input-row">
+        <input type="number" inputmode="decimal" id="f-ph" placeholder="6.5">
+      </div>
+    </div>
+    <div class="input-item">
+      <label>EC</label>
+      <div class="input-row">
+        <input type="number" inputmode="decimal" id="f-ec" placeholder="1.20">
+        <span class="input-unit">mS/cm</span>
+      </div>
     </div>
   </div>
-  <div class="input-item">
-    <label>水温</label>
-    <div class="input-row">
-      <input type="number" inputmode="decimal" id="f-water-temp" placeholder="18.0">
-      <span class="input-unit">°C</span>
+
+  <div class="sec-label">追水</div>
+  <div class="water-section">
+    <div class="water-row">
+      <span class="water-label">水</span>
+      <input type="number" inputmode="decimal" step="0.1" id="f-water" placeholder="0">
+      <span class="water-unit">L</span>
+    </div>
+    <div class="water-row">
+      <span class="water-label">液肥液</span>
+      <input type="number" inputmode="decimal" step="0.1" id="f-nutrient" placeholder="0">
+      <span class="water-unit">L</span>
     </div>
   </div>
-  <div class="input-item">
-    <label>pH</label>
-    <div class="input-row">
-      <input type="number" inputmode="decimal" id="f-ph" placeholder="6.5">
-    </div>
-  </div>
-  <div class="input-item">
-    <label>EC</label>
-    <div class="input-row">
-      <input type="number" inputmode="decimal" id="f-ec" placeholder="1.20">
-      <span class="input-unit">mS/cm</span>
-    </div>
-  </div>
+
+  <button class="save-btn" id="save-shelf-btn" onclick="saveShelfLog()">棚の記録を保存</button>
 </div>
 
-<div class="sec-label">追水</div>
-<div class="water-section">
-  <div class="water-row">
-    <span class="water-label">水</span>
-    <input type="number" inputmode="decimal" step="0.1" id="f-water" placeholder="0">
-    <span class="water-unit">L</span>
+<!-- 品種の記録 -->
+<div class="sec-block">
+  <div class="sec-title">🌱 品種の記録</div>
+
+  <div class="variety-tabs">
+    <button class="var-tab active" onclick="switchVariety(0)" id="tab-0">飛河</button>
+    <button class="var-tab" onclick="switchVariety(1)" id="tab-1">正緑</button>
   </div>
-  <div class="water-row">
-    <span class="water-label">液肥液</span>
-    <input type="number" inputmode="decimal" step="0.1" id="f-nutrient" placeholder="0">
-    <span class="water-unit">L</span>
+
+  <div class="batch-row" id="batch-row"></div>
+
+  <div class="info-banner">
+    <div class="info-item">苗入荷日<strong id="disp-arrival">-</strong></div>
+    <div class="info-item">移植期間<strong id="disp-transplant">-</strong></div>
+    <div class="info-item">経過日数<strong id="disp-days">-</strong></div>
+    <button class="info-edit" onclick="openSettings()">設定</button>
   </div>
+
+  <div class="milestone-banner hidden" id="milestone-banner"></div>
+
+  <div class="sec-label">写真</div>
+  <div class="photo-section">
+    <div class="photo-scroll" id="photo-row"></div>
+    <input type="file" id="photo-input" accept="image/*" multiple onchange="addPhotos(this)">
+  </div>
+
+  <div class="sec-label">メモ</div>
+  <textarea class="memo-box" id="f-memo" placeholder="気づいたこと・異常・作業内容など"></textarea>
+
+  <button class="save-btn" id="save-variety-btn" onclick="saveVarietyLog()">品種の記録を保存</button>
 </div>
 
-<div class="sec-label">写真</div>
-<div class="photo-section">
-  <div class="photo-scroll" id="photo-row"></div>
-  <input type="file" id="photo-input" accept="image/*" multiple onchange="addPhotos(this)">
-</div>
-
-<div class="sec-label">メモ</div>
-<textarea class="memo-box" id="f-memo" placeholder="気づいたこと・異常・作業内容など"></textarea>
-
-<button class="save-btn" id="save-btn" onclick="saveLog()">保存する</button>
-
+<!-- 過去の記録 -->
 <div class="history-title">過去の記録</div>
 <div id="history-list"></div>
 
@@ -293,9 +315,15 @@ let currentVariety = 0;
 let currentBatch = 0;
 let currentDate = new Date();
 currentDate.setHours(0, 0, 0, 0);
+const realToday = new Date();
+realToday.setHours(0, 0, 0, 0);
+
 let currentPhotos = [];
 let currentStaff = '';
-let isSaving = false;
+let isSavingShelf = false;
+let isSavingVariety = false;
+
+let shelfLogs = {};
 
 let data = [
   { name: '飛河', batches: [] },
@@ -361,7 +389,7 @@ async function init() {
   showLoading(true);
   try {
     await loadBatches();
-    await loadLogsForBatch();
+    await Promise.all([loadShelfLogs(), loadLogsForBatch()]);
   } catch (e) {
     alert('データの読み込みに失敗しました。\n通信環境を確認してください。\n' + e.message);
   }
@@ -402,10 +430,29 @@ async function loadBatches() {
   data.forEach(v => { v.batches = v.batches.filter(Boolean); });
 }
 
+async function loadShelfLogs() {
+  const { data: rows, error } = await sb.from('wasabi_shelf_logs').select('*');
+  if (error) throw error;
+  shelfLogs = {};
+  rows.forEach(r => {
+    shelfLogs[r.log_date] = {
+      time: r.log_time || '',
+      staff: r.staff || '',
+      roomTemp: r.room_temp || '',
+      waterTemp: r.water_temp || '',
+      ph: r.ph || '',
+      ec: r.ec || '',
+      water: r.water || '',
+      nutrient: r.nutrient || '',
+      savedAt: r.saved_at
+    };
+  });
+}
+
 async function loadLogsForBatch() {
   const { data: rows, error } = await sb
     .from('wasabi_logs')
-    .select('*')
+    .select('log_date, memo, photos')
     .eq('variety_idx', currentVariety)
     .eq('batch_idx', currentBatch)
     .order('log_date');
@@ -416,17 +463,8 @@ async function loadLogsForBatch() {
   b.logs = {};
   rows.forEach(r => {
     b.logs[r.log_date] = {
-      time: r.log_time || '',
-      staff: r.staff || '',
-      roomTemp: r.room_temp || '',
-      waterTemp: r.water_temp || '',
-      ph: r.ph || '',
-      ec: r.ec || '',
-      water: r.water || '',
-      nutrient: r.nutrient || '',
       memo: r.memo || '',
-      photos: r.photos || [],
-      savedAt: r.saved_at
+      photos: r.photos || []
     };
   });
 }
@@ -467,10 +505,36 @@ function goToday() {
 function render() {
   const v = data[currentVariety];
   const b = getBatch();
+  const key = dateKey(currentDate);
+  const todayKey = dateKey(realToday);
 
   document.getElementById('tab-0').textContent = data[0].name || '飛河';
   document.getElementById('tab-1').textContent = data[1].name || '正緑';
 
+  document.getElementById('disp-date').textContent = fmtDate(currentDate);
+  document.getElementById('back-today-wrap').innerHTML = key === todayKey
+    ? '' : `<button class="back-today" onclick="goToday()">今日に戻る</button>`;
+
+  // Shelf fields
+  const shelf = shelfLogs[key] || {};
+  const now = new Date();
+  const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('f-time').value = shelf.time || (key === todayKey ? nowTime : '');
+  document.getElementById('f-room-temp').value = shelf.roomTemp ?? '';
+  document.getElementById('f-water-temp').value = shelf.waterTemp ?? '';
+  document.getElementById('f-ph').value = shelf.ph ?? '';
+  document.getElementById('f-ec').value = shelf.ec ?? '';
+  document.getElementById('f-water').value = shelf.water ?? '';
+  document.getElementById('f-nutrient').value = shelf.nutrient ?? '';
+  currentStaff = shelf.staff || '';
+  renderStaffChips();
+
+  const shelfBtn = document.getElementById('save-shelf-btn');
+  shelfBtn.textContent = '棚の記録を保存';
+  shelfBtn.classList.remove('saved');
+  shelfBtn.disabled = false;
+
+  // Batch row
   const batchRow = document.getElementById('batch-row');
   batchRow.innerHTML = (v.batches || []).map((batch, i) =>
     `<button class="batch-chip${i===currentBatch?' active':''}" onclick="switchBatch(${i})">${batchLabel(batch,i)}</button>`
@@ -481,36 +545,21 @@ function render() {
     document.getElementById('disp-transplant').textContent = fmtRange(b.transplantFrom, b.transplantTo);
     const days = daysSince(b.arrivalDate);
     document.getElementById('disp-days').textContent = days !== null ? `${days}日目` : '-';
+    renderMilestoneBanner(b, key);
   }
 
-  document.getElementById('disp-date').textContent = fmtDate(currentDate);
-
-  const key = dateKey(currentDate);
-  const log = b?.logs[key] || {};
-  const todayKey = dateKey(new Date());
-  const now = new Date();
-  const nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  document.getElementById('f-time').value = log.time ?? (key === todayKey ? nowTime : '');
-  document.getElementById('f-room-temp').value = log.roomTemp ?? '';
-  document.getElementById('f-water-temp').value = log.waterTemp ?? '';
-  document.getElementById('f-ph').value = log.ph ?? '';
-  document.getElementById('f-ec').value = log.ec ?? '';
-  document.getElementById('f-water').value = log.water ?? '';
-  document.getElementById('f-nutrient').value = log.nutrient ?? '';
-  document.getElementById('f-memo').value = log.memo ?? '';
-
-  currentPhotos = [...(log.photos || [])];
-  currentStaff = log.staff ?? '';
+  // Variety fields (memo + photos only)
+  const vlog = b?.logs[key] || {};
+  document.getElementById('f-memo').value = vlog.memo ?? '';
+  currentPhotos = [...(vlog.photos || [])];
   renderPhotos();
-  renderStaffChips();
-  if (b) renderMilestoneBanner(b, key);
-  renderHistory();
 
-  const btn = document.getElementById('save-btn');
-  btn.textContent = '保存する';
-  btn.classList.remove('saved');
-  btn.disabled = false;
+  const varBtn = document.getElementById('save-variety-btn');
+  varBtn.textContent = '品種の記録を保存';
+  varBtn.classList.remove('saved');
+  varBtn.disabled = false;
+
+  renderHistory();
 }
 
 function renderStaffChips() {
@@ -528,7 +577,7 @@ function renderMilestoneBanner(b, key) {
   const el = document.getElementById('milestone-banner');
   const { isArrival, inTransplant } = getMilestone(b, key);
   if (isArrival && inTransplant) { el.className = 'milestone-banner arrival'; el.textContent = '苗入荷日 / 移植開始日'; }
-  else if (isArrival)  { el.className = 'milestone-banner arrival';   el.textContent = '苗入荷日'; }
+  else if (isArrival)    { el.className = 'milestone-banner arrival';   el.textContent = '苗入荷日'; }
   else if (inTransplant) { el.className = 'milestone-banner transplant'; el.textContent = '移植期間'; }
   else { el.className = 'milestone-banner hidden'; el.textContent = ''; }
 }
@@ -588,33 +637,41 @@ function resizeImage(dataUrl, maxW, quality, cb) {
 function renderHistory() {
   const b = getBatch();
   const todayKey = dateKey(currentDate);
-  const keys = Object.keys(b?.logs || {}).sort().reverse();
+
+  const allDates = new Set([
+    ...Object.keys(shelfLogs),
+    ...Object.keys(b?.logs || {})
+  ]);
+  const keys = [...allDates].sort().reverse();
+
   const el = document.getElementById('history-list');
   if (keys.length === 0) { el.innerHTML = '<div class="no-history">まだ記録がありません</div>'; return; }
+
   el.innerHTML = keys.map(k => {
-    const log = b.logs[k];
+    const shelf = shelfLogs[k] || {};
+    const vlog = b?.logs[k] || {};
     const [,m,d] = k.split('-');
-    const { isArrival, inTransplant } = getMilestone(b, k);
+    const { isArrival, inTransplant } = b ? getMilestone(b, k) : { isArrival: false, inTransplant: false };
     const badges = (isArrival ? '<span class="badge badge-arrival">入荷</span>' : '')
                  + (inTransplant ? '<span class="badge badge-transplant">移植</span>' : '');
     const vals = [];
-    if (log.roomTemp) vals.push(`室温<strong>${log.roomTemp}°</strong>`);
-    if (log.waterTemp) vals.push(`水温<strong>${log.waterTemp}°</strong>`);
-    if (log.ph)       vals.push(`pH<strong>${log.ph}</strong>`);
-    if (log.ec)       vals.push(`EC<strong>${log.ec}</strong>`);
+    if (shelf.roomTemp) vals.push(`室温<strong>${shelf.roomTemp}°</strong>`);
+    if (shelf.waterTemp) vals.push(`水温<strong>${shelf.waterTemp}°</strong>`);
+    if (shelf.ph)       vals.push(`pH<strong>${shelf.ph}</strong>`);
+    if (shelf.ec)       vals.push(`EC<strong>${shelf.ec}</strong>`);
     const waterParts = [];
-    if (log.water    && parseFloat(log.water)    > 0) waterParts.push(`水 ${log.water}L`);
-    if (log.nutrient && parseFloat(log.nutrient) > 0) waterParts.push(`液肥 ${log.nutrient}L`);
-    const photosHtml = (log.photos||[]).map(src =>
+    if (shelf.water    && parseFloat(shelf.water)    > 0) waterParts.push(`水 ${shelf.water}L`);
+    if (shelf.nutrient && parseFloat(shelf.nutrient) > 0) waterParts.push(`液肥 ${shelf.nutrient}L`);
+    const photosHtml = (vlog.photos||[]).map(src =>
       `<img src="${src}" onclick="openViewer('${src.replace(/'/g,"\\'")}',event)">`).join('');
     return `<div class="hist-card${k===todayKey?' active-date':''}" onclick="jumpToDate('${k}')">
       <div class="hist-date">
         <span class="hist-date-label">${parseInt(m)}/${parseInt(d)}${badges}</span>
-        <span>${[log.time, log.staff].filter(Boolean).join(' · ')}</span>
+        <span>${[shelf.time, shelf.staff].filter(Boolean).join(' · ')}</span>
       </div>
       ${vals.length?`<div class="hist-vals">${vals.map(s=>`<span class="hist-val">${s}</span>`).join('')}</div>`:''}
       ${waterParts.length?`<div class="hist-water">追水: ${waterParts.join(' / ')}</div>`:''}
-      ${log.memo?`<div class="hist-memo">${escHtml(log.memo)}</div>`:''}
+      ${vlog.memo?`<div class="hist-memo">${escHtml(vlog.memo)}</div>`:''}
       ${photosHtml?`<div class="hist-photos">${photosHtml}</div>`:''}
     </div>`;
   }).join('');
@@ -629,19 +686,17 @@ function jumpToDate(iso) {
   render();
 }
 
-// ---- Save ----
+// ---- Save shelf ----
 
-async function saveLog() {
-  if (isSaving) return;
-  isSaving = true;
-  const btn = document.getElementById('save-btn');
+async function saveShelfLog() {
+  if (isSavingShelf) return;
+  isSavingShelf = true;
+  const btn = document.getElementById('save-shelf-btn');
   btn.textContent = '保存中...';
   btn.disabled = true;
 
   const key = dateKey(currentDate);
-  const logData = {
-    variety_idx: currentVariety,
-    batch_idx: currentBatch,
+  const rec = {
     log_date: key,
     log_time: document.getElementById('f-time').value,
     staff: currentStaff,
@@ -651,6 +706,46 @@ async function saveLog() {
     ec: document.getElementById('f-ec').value,
     water: document.getElementById('f-water').value,
     nutrient: document.getElementById('f-nutrient').value,
+    saved_at: new Date().toISOString()
+  };
+
+  try {
+    const { error } = await sb.from('wasabi_shelf_logs')
+      .upsert(rec, { onConflict: 'log_date' });
+    if (error) throw error;
+    shelfLogs[key] = {
+      time: rec.log_time, staff: rec.staff,
+      roomTemp: rec.room_temp, waterTemp: rec.water_temp,
+      ph: rec.ph, ec: rec.ec,
+      water: rec.water, nutrient: rec.nutrient,
+      savedAt: rec.saved_at
+    };
+    btn.textContent = '保存しました ✓';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = '棚の記録を保存'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
+    renderHistory();
+  } catch (e) {
+    alert('保存に失敗しました。\n' + e.message);
+    btn.textContent = '棚の記録を保存';
+    btn.disabled = false;
+  }
+  isSavingShelf = false;
+}
+
+// ---- Save variety ----
+
+async function saveVarietyLog() {
+  if (isSavingVariety) return;
+  isSavingVariety = true;
+  const btn = document.getElementById('save-variety-btn');
+  btn.textContent = '保存中...';
+  btn.disabled = true;
+
+  const key = dateKey(currentDate);
+  const rec = {
+    variety_idx: currentVariety,
+    batch_idx: currentBatch,
+    log_date: key,
     memo: document.getElementById('f-memo').value,
     photos: currentPhotos,
     saved_at: new Date().toISOString()
@@ -658,28 +753,20 @@ async function saveLog() {
 
   try {
     const { error } = await sb.from('wasabi_logs')
-      .upsert(logData, { onConflict: 'variety_idx,batch_idx,log_date' });
+      .upsert(rec, { onConflict: 'variety_idx,batch_idx,log_date' });
     if (error) throw error;
-
     const b = getBatch();
-    b.logs[key] = {
-      time: logData.log_time, staff: logData.staff,
-      roomTemp: logData.room_temp, waterTemp: logData.water_temp,
-      ph: logData.ph, ec: logData.ec,
-      water: logData.water, nutrient: logData.nutrient,
-      memo: logData.memo, photos: currentPhotos, savedAt: logData.saved_at
-    };
-
+    b.logs[key] = { memo: rec.memo, photos: [...currentPhotos] };
     btn.textContent = '保存しました ✓';
     btn.classList.add('saved');
-    setTimeout(() => { btn.textContent = '保存する'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
+    setTimeout(() => { btn.textContent = '品種の記録を保存'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
     renderHistory();
   } catch (e) {
     alert('保存に失敗しました。\n' + e.message);
-    btn.textContent = '保存する';
+    btn.textContent = '品種の記録を保存';
     btn.disabled = false;
   }
-  isSaving = false;
+  isSavingVariety = false;
 }
 
 // ---- Settings ----
@@ -749,19 +836,41 @@ function closeViewer() { document.getElementById('photo-viewer').classList.add('
 
 function exportCSV() {
   const BOM = '\uFEFF';
-  const header = '品種,バッチ,日付,時刻,担当者,室温(°C),水温(°C),pH,EC(mS/cm),追水-水(L),追水-液肥(L),メモ';
+  const header = '日付,時刻,担当者,室温(°C),水温(°C),pH,EC(mS/cm),追水-水(L),追水-液肥(L),品種,バッチ,メモ,写真数';
   const rows = [];
-  data.forEach(v => {
-    v.batches.forEach((b, bi) => {
-      Object.keys(b.logs).sort().forEach(k => {
-        const log = b.logs[k];
-        const memo = (log.memo||'').replace(/"/g,'""');
-        rows.push([v.name, `第${bi+1}回`, k, log.time, log.staff,
-          log.roomTemp, log.waterTemp, log.ph, log.ec,
-          log.water, log.nutrient, `"${memo}"`].join(','));
+
+  const allDates = new Set(Object.keys(shelfLogs));
+  data.forEach(v => v.batches.forEach(b => Object.keys(b.logs).forEach(k => allDates.add(k))));
+
+  [...allDates].sort().forEach(k => {
+    const shelf = shelfLogs[k] || {};
+    data.forEach((v, vi) => {
+      v.batches.forEach((b, bi) => {
+        const vlog = b.logs[k];
+        if (vlog || shelfLogs[k]) {
+          const memo = (vlog?.memo || '').replace(/"/g,'""');
+          const photoCount = (vlog?.photos || []).length;
+          rows.push([
+            k, shelf.time || '', shelf.staff || '',
+            shelf.roomTemp || '', shelf.waterTemp || '', shelf.ph || '', shelf.ec || '',
+            shelf.water || '', shelf.nutrient || '',
+            v.name, `第${bi+1}回`, `"${memo}"`, photoCount
+          ].join(','));
+        }
       });
     });
+    if (!data.some(v => v.batches.some(b => b.logs[k])) && shelfLogs[k]) {
+      const shelf = shelfLogs[k];
+      const memo = '';
+      rows.push([
+        k, shelf.time || '', shelf.staff || '',
+        shelf.roomTemp || '', shelf.waterTemp || '', shelf.ph || '', shelf.ec || '',
+        shelf.water || '', shelf.nutrient || '',
+        '', '', `"${memo}"`, 0
+      ].join(','));
+    }
   });
+
   if (!rows.length) { alert('記録がありません'); return; }
   const blob = new Blob([BOM + header + '\n' + rows.join('\n')], {type:'text/csv'});
   const url = URL.createObjectURL(blob);
@@ -776,11 +885,12 @@ function exportCSV() {
 function openMonthDelete() {
   const b = getBatch();
   const months = {};
-  Object.keys(b?.logs||{}).forEach(k => { const ym = k.slice(0,7); months[ym] = (months[ym]||0)+1; });
+  Object.keys(shelfLogs).forEach(k => { const ym = k.slice(0,7); months[ym] = (months[ym]||0)+1; });
+  Object.keys(b?.logs||{}).forEach(k => { const ym = k.slice(0,7); if (!months[ym]) months[ym] = 0; });
   const keys = Object.keys(months).sort().reverse();
   const el = document.getElementById('month-list');
   el.innerHTML = keys.length
-    ? keys.map(ym => { const [y,m] = ym.split('-'); return `<div class="month-item"><div><div class="month-item-label">${y}年${parseInt(m)}月</div><div class="month-item-count">${months[ym]}件</div></div><button class="month-del-btn" onclick="deleteMonth('${ym}')">削除</button></div>`; }).join('')
+    ? keys.map(ym => { const [y,m] = ym.split('-'); return `<div class="month-item"><div><div class="month-item-label">${y}年${parseInt(m)}月</div><div class="month-item-count">棚: ${months[ym]}件</div></div><button class="month-del-btn" onclick="deleteMonth('${ym}')">削除</button></div>`; }).join('')
     : '<div style="color:#bbb;font-size:13px;text-align:center;padding:1rem">記録がありません</div>';
   document.getElementById('month-modal').classList.remove('hidden');
 }
@@ -790,12 +900,17 @@ async function deleteMonth(ym) {
   const [y,m] = ym.split('-');
   if (!confirm(`${y}年${parseInt(m)}月のデータを削除しますか？\n写真も含め元に戻せません。`)) return;
   try {
-    const { error } = await sb.from('wasabi_logs').delete()
-      .eq('variety_idx', currentVariety).eq('batch_idx', currentBatch)
-      .gte('log_date', `${ym}-01`).lte('log_date', `${ym}-31`);
-    if (error) throw error;
+    const [e1, e2] = await Promise.all([
+      sb.from('wasabi_shelf_logs').delete().gte('log_date', `${ym}-01`).lte('log_date', `${ym}-31`),
+      sb.from('wasabi_logs').delete()
+        .eq('variety_idx', currentVariety).eq('batch_idx', currentBatch)
+        .gte('log_date', `${ym}-01`).lte('log_date', `${ym}-31`)
+    ]);
+    if (e1.error) throw e1.error;
+    if (e2.error) throw e2.error;
+    Object.keys(shelfLogs).filter(k=>k.startsWith(ym)).forEach(k=>delete shelfLogs[k]);
     const b = getBatch();
-    Object.keys(b.logs).filter(k=>k.startsWith(ym)).forEach(k=>delete b.logs[k]);
+    Object.keys(b?.logs||{}).filter(k=>k.startsWith(ym)).forEach(k=>delete b.logs[k]);
     openMonthDelete(); renderHistory();
   } catch (e) { alert('削除失敗: ' + e.message); }
 }
