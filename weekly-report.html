@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>週別レポート — わさび栽培</title>
+<link rel="apple-touch-icon" href="wasabibird.png">
+<link rel="icon" href="wasabibird.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background: #f9f9f7; padding: 1rem 0.5rem 3rem; max-width: 480px; margin: 0 auto; }
+
+.page-header { text-align: center; margin-bottom: 1.5rem; }
+.back-link { display: inline-block; font-size: 13px; color: #0B7A75; background: #E0F5F4; border-radius: 20px; padding: 4px 14px; text-decoration: none; margin-bottom: 10px; }
+.page-title { font-size: 20px; font-weight: 500; color: #1a1a1a; }
+.page-sub { font-size: 13px; color: #888; margin-top: 4px; }
+
+.week-card { background: #fff; border-radius: 16px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.week-header { padding: 12px 16px; background: #f0f0ed; display: flex; align-items: baseline; justify-content: space-between; }
+.week-label { font-size: 16px; font-weight: 500; color: #1a1a1a; }
+.week-range { font-size: 13px; color: #666; margin-left: 8px; }
+.week-days { font-size: 11px; color: #aaa; }
+.week-body { padding: 14px 16px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
+.stat-box { background: #f5f5f2; border-radius: 10px; padding: 8px 4px; text-align: center; }
+.stat-label { font-size: 10px; color: #888; margin-bottom: 2px; }
+.stat-val { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+.stat-unit { font-size: 9px; color: #aaa; margin-top: 1px; }
+
+.events-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.variety-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 5px; }
+.event-item { font-size: 12px; color: #666; line-height: 1.6; }
+
+.photos-section { border-top: 0.5px solid #ebebeb; padding-top: 12px; }
+.photos-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+.load-btn { width: 100%; padding: 11px; background: #E0F5F4; color: #0B7A75; border: 1px solid #0B7A75; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.load-btn:active { background: #c8ede9; }
+.load-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.variety-photos { margin-bottom: 10px; }
+.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 6px; }
+.photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; display: block; }
+
+.photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 12px; }
+.photo-viewer.hidden { display: none; }
+.photo-viewer img { max-width: 95vw; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+.viewer-label { color: #fff; font-size: 12px; opacity: 0.7; }
+.viewer-nav { display: flex; gap: 16px; align-items: center; }
+.viewer-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 22px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; }
+.viewer-count { color: #fff; font-size: 12px; min-width: 60px; text-align: center; }
+
+#loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 12px; }
+#loading-overlay.hidden { display: none; }
+#loading-overlay .load-icon { font-size: 36px; }
+#loading-overlay .load-text { font-size: 14px; color: #0B7A75; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="load-icon">🌿</div>
+  <div class="load-text">読み込み中...</div>
+</div>
+
+<div class="page-header">
+  <a class="back-link" href="index.html">← 記録アプリへ</a>
+  <div class="page-title">週別レポート</div>
+  <div class="page-sub">わさび栽培記録 5/13〜6/30</div>
+</div>
+
+<div id="report-container"></div>
+
+<div class="photo-viewer hidden" id="photo-viewer" onclick="closeViewer()">
+  <div class="viewer-label" id="viewer-label"></div>
+  <img id="viewer-img" src="" alt="">
+  <div class="viewer-nav">
+    <button class="viewer-btn" onclick="event.stopPropagation(); moveViewer(-1)">‹</button>
+    <span class="viewer-count" id="viewer-count"></span>
+    <button class="viewer-btn" onclick="event.stopPropagation(); moveViewer(1)">›</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://pqoexlikdviqqgdnzuud.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_9KR8h4be2Q5-4ux6g55hSg_Jkv9UYBM';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const WEEKS = [
+  {
+    label: '第1週', range: '5/13〜5/19', days: '0〜6日目',
+    dates: ['2026-05-18','2026-05-19'],
+    rt: null, wt: null, ph: null, ec: null, water: '—', totalPhotos: 4,
+    hikawa: ['移植作業（5/13〜5/15）', '計測記録なし'],
+    seiryoku: ['移植作業（5/13〜5/15）', '計測記録なし']
+  },
+  {
+    label: '第2週', range: '5/20〜5/26', days: '7〜13日目',
+    dates: ['2026-05-20','2026-05-21','2026-05-22','2026-05-23','2026-05-24','2026-05-25','2026-05-26'],
+    rt: 19.6, wt: 14.5, ph: 6.75, ec: 1.14, water: '—', totalPhotos: 93,
+    hikawa: ['黄色い葉・黒変葉カット開始', '葉脈が黒くなる株あり', 'カット基準を後藤さんと確認'],
+    seiryoku: ['新芽の成長をいくつか確認', '飛河の約半分の背丈', '目立った黄色・黒変葉は少ない']
+  },
+  {
+    label: '第3週', range: '5/27〜6/2', days: '14〜20日目',
+    dates: ['2026-05-27','2026-05-28','2026-05-29','2026-05-30','2026-05-31','2026-06-01','2026-06-02'],
+    rt: 18.3, wt: 14.1, ph: 6.67, ec: 1.17, water: '水 40L・液肥 0.4L', totalPhotos: 100,
+    hikawa: ['白く若い根っこを確認', '黒い粒がボード上に発見', '枯れ株2株発生'],
+    seiryoku: ['根の成長良好（くき下）', '1株萎れ始め', 'LEDなし側がひまわりのように光へ向く']
+  },
+  {
+    label: '第4週', range: '6/3〜6/9', days: '21〜27日目',
+    dates: ['2026-06-04','2026-06-05','2026-06-06','2026-06-07','2026-06-08','2026-06-09'],
+    rt: 19.9, wt: 15.0, ph: 6.80, ec: 1.06, water: '水 25L', totalPhotos: 77,
+    hikawa: ['スポンジ乾燥→水タイマー対応', '虫食い痕あり', '黄色葉4枚カット', '飛河、大きく成長'],
+    seiryoku: ['萎れボード1枚→水タイマー対応', '枯れ株3株が復活しかけ', '1株枯れ']
+  },
+  {
+    label: '第5週', range: '6/10〜6/16', days: '28〜34日目',
+    dates: ['2026-06-10','2026-06-11','2026-06-12','2026-06-13','2026-06-14','2026-06-15','2026-06-16'],
+    rt: 20.2, wt: 14.1, ph: 6.80, ec: 1.03, water: '水 5L', totalPhotos: 90,
+    hikawa: ['葉カット継続', '株処分1株（2段目奥）', 'くき下の葉が手のひらサイズに成長'],
+    seiryoku: ['白カビ付着を発見', '株処分4株', '正緑の方が元気に育っている']
+  },
+  {
+    label: '第6週', range: '6/17〜6/23', days: '35〜41日目',
+    dates: ['2026-06-17','2026-06-19','2026-06-20','2026-06-21','2026-06-22','2026-06-23'],
+    rt: 22.7, wt: 13.8, ph: 6.88, ec: 1.13, water: '—', totalPhotos: 73,
+    hikawa: ['茎折れ・黄色葉カット', 'ダウン剤10cc投入', '根が挟まっていた株発見', '茎下から新成長確認'],
+    seiryoku: ['くき上に白カビ？付着', '枯れ葉・茎折れカット']
+  },
+  {
+    label: '第7週', range: '6/24〜6/30', days: '42〜48日目',
+    dates: ['2026-06-24','2026-06-25','2026-06-26','2026-06-27','2026-06-28','2026-06-29'],
+    rt: 22.0, wt: 14.3, ph: 7.07, ec: 1.07, water: '水 10L', totalPhotos: 74,
+    hikawa: ['しおれた葉・変形した葉が増加', '葉の表面がテカって見える', 'くき下から新芽確認'],
+    seiryoku: ['葉のフチが赤みを帯びてきた', 'くき下から新芽確認']
+  }
+];
+
+const photoCache = {};
+let viewerPhotos = [], viewerIdx = 0;
+
+function fmt(v, d) { return v == null ? '—' : v.toFixed(d); }
+
+function openViewer(photos, idx, label) {
+  viewerPhotos = photos; viewerIdx = idx;
+  document.getElementById('viewer-label').textContent = label;
+  document.getElementById('viewer-img').src = photos[idx];
+  document.getElementById('viewer-count').textContent = `${idx + 1} / ${photos.length}`;
+  document.getElementById('photo-viewer').classList.remove('hidden');
+}
+function moveViewer(d) {
+  viewerIdx = (viewerIdx + d + viewerPhotos.length) % viewerPhotos.length;
+  document.getElementById('viewer-img').src = viewerPhotos[viewerIdx];
+  document.getElementById('viewer-count').textContent = `${viewerIdx + 1} / ${viewerPhotos.length}`;
+}
+function closeViewer() { document.getElementById('photo-viewer').classList.add('hidden'); }
+
+async function loadWeekPhotos(wIdx) {
+  const w = WEEKS[wIdx];
+  const btn = document.getElementById(`btn-${wIdx}`);
+  const area = document.getElementById(`photos-area-${wIdx}`);
+
+  btn.disabled = true;
+  btn.textContent = '読み込み中...';
+
+  const h0 = [], h1 = [];
+  for (let di = 0; di < w.dates.length; di++) {
+    const date = w.dates[di];
+    btn.textContent = `読み込み中... ${di + 1}/${w.dates.length}日目`;
+    try {
+      let rows = photoCache[date];
+      if (!rows) {
+        const { data, error } = await sb.from('wasabi_logs')
+          .select('variety_idx, photos')
+          .eq('log_date', date)
+          .eq('batch_idx', 0);
+        if (error) throw error;
+        photoCache[date] = data;
+        rows = data;
+      }
+      rows.filter(r => r.variety_idx === 0).forEach(r => { if (r.photos) h0.push(...r.photos); });
+      rows.filter(r => r.variety_idx === 1).forEach(r => { if (r.photos) h1.push(...r.photos); });
+    } catch (e) {
+      console.warn('skip', date, e);
+    }
+  }
+
+  const key0 = `w${wIdx}_0`, key1 = `w${wIdx}_1`;
+  photoCache[key0] = h0; photoCache[key1] = h1;
+
+  let html = '';
+  if (h0.length) {
+    html += `<div class="variety-photos">
+      <div class="variety-badge" style="color:#3B6D11;background:#EAF3DE;">飛河 ${h0.length}枚</div>
+      <div class="photo-grid">${h0.map((src, i) =>
+        `<img src="${src}" loading="lazy" alt="飛河${i+1}" onclick="openViewer(photoCache['${key0}'],${i},'${w.label} 飛河')">`
+      ).join('')}</div>
+    </div>`;
+  }
+  if (h1.length) {
+    html += `<div class="variety-photos">
+      <div class="variety-badge" style="color:#534AB7;background:#EEEDFE;">正緑 ${h1.length}枚</div>
+      <div class="photo-grid">${h1.map((src, i) =>
+        `<img src="${src}" loading="lazy" alt="正緑${i+1}" onclick="openViewer(photoCache['${key1}'],${i},'${w.label} 正緑')">`
+      ).join('')}</div>
+    </div>`;
+  }
+  if (!html) html = '<div style="font-size:13px;color:#bbb;padding:8px 0;">写真なし</div>';
+
+  area.innerHTML = html;
+  btn.style.display = 'none';
+}
+
+function buildReports() {
+  document.getElementById('report-container').innerHTML = WEEKS.map((w, i) => `
+    <div class="week-card">
+      <div class="week-header">
+        <div>
+          <span class="week-label">${w.label}</span>
+          <span class="week-range">${w.range}</span>
+        </div>
+        <span class="week-days">${w.days}</span>
+      </div>
+      <div class="week-body">
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-label">室温</div><div class="stat-val">${fmt(w.rt,1)}</div><div class="stat-unit">°C</div></div>
+          <div class="stat-box"><div class="stat-label">水温</div><div class="stat-val">${fmt(w.wt,1)}</div><div class="stat-unit">°C</div></div>
+          <div class="stat-box"><div class="stat-label">pH</div><div class="stat-val">${fmt(w.ph,2)}</div></div>
+          <div class="stat-box"><div class="stat-label">EC</div><div class="stat-val">${fmt(w.ec,2)}</div></div>
+          <div class="stat-box"><div class="stat-label">追水</div><div style="font-size:11px;color:#0B7A75;margin-top:3px;line-height:1.4;">${w.water}</div></div>
+        </div>
+        <div class="events-grid">
+          <div>
+            <div class="variety-badge" style="color:#3B6D11;background:#EAF3DE;">飛河</div>
+            ${w.hikawa.map(e => `<div class="event-item">・${e}</div>`).join('')}
+          </div>
+          <div>
+            <div class="variety-badge" style="color:#534AB7;background:#EEEDFE;">正緑</div>
+            ${w.seiryoku.map(e => `<div class="event-item">・${e}</div>`).join('')}
+          </div>
+        </div>
+        <div class="photos-section">
+          <div class="photos-label">写真 計${w.totalPhotos}枚</div>
+          <div id="photos-area-${i}"></div>
+          <button class="load-btn" id="btn-${i}" onclick="loadWeekPhotos(${i})">写真を表示する（計${w.totalPhotos}枚）</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('loading-overlay').classList.add('hidden');
+buildReports();
+</script>
+</body>
+</html>
