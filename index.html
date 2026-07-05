@@ -96,6 +96,7 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
 #f-harvest-avg { font-size: 16px; font-weight: 700; color: #0B7A75; }
 
 .hist-harvest { font-size: 13px; color: #0B7A75; margin-top: 4px; }
+.harvest-note { font-size: 11px; color: #999; margin-top: -10px; margin-bottom: 14px; }
 .history-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
 .hist-card { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
 .hist-card.active-date { background: #E0F5F4; }
@@ -265,6 +266,8 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
       <div class="harvest-avg-val"><span id="f-harvest-avg">-</span><span class="harvest-unit">g</span></div>
     </div>
   </div>
+
+  <div class="harvest-note">※エラーの葉は除外</div>
 
   <div class="sec-label">メモ</div>
   <textarea class="memo-box" id="f-memo" placeholder="気づいたこと・異常・作業内容など"></textarea>
