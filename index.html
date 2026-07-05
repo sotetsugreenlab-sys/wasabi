@@ -86,6 +86,16 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
 
 .memo-box { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: sans-serif; color: #1a1a1a; resize: vertical; min-height: 70px; outline: none; margin-bottom: 16px; background: #fff; }
 
+.harvest-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.harvest-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.harvest-field label { font-size: 11px; color: #666; }
+.harvest-input-wrap { display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 8px 10px; }
+.harvest-input-wrap input { flex: 1; min-width: 0; border: none; outline: none; font-size: 16px; font-weight: 600; color: #1a1a1a; background: transparent; width: 100%; }
+.harvest-unit { font-size: 12px; color: #888; white-space: nowrap; }
+.harvest-avg-val { display: flex; align-items: center; gap: 4px; background: #f0f9f8; border: 1px solid #c0e4e2; border-radius: 10px; padding: 8px 10px; }
+#f-harvest-avg { font-size: 16px; font-weight: 700; color: #0B7A75; }
+
+.hist-harvest { font-size: 13px; color: #0B7A75; margin-top: 4px; }
 .history-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
 .hist-card { background: #f5f5f2; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
 .hist-card.active-date { background: #E0F5F4; }
@@ -238,6 +248,22 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
   <div class="photo-section">
     <div class="photo-scroll" id="photo-row"></div>
     <input type="file" id="photo-input" accept="image/*" multiple onchange="addPhotos(this)">
+  </div>
+
+  <div class="sec-label">刈取</div>
+  <div class="harvest-row">
+    <div class="harvest-field">
+      <label>枚数</label>
+      <div class="harvest-input-wrap"><input type="number" id="f-harvest-count" min="0" placeholder="0" oninput="calcHarvestAvg()"><span class="harvest-unit">枚</span></div>
+    </div>
+    <div class="harvest-field">
+      <label>重さ</label>
+      <div class="harvest-input-wrap"><input type="number" id="f-harvest-weight" min="0" placeholder="0" oninput="calcHarvestAvg()"><span class="harvest-unit">g</span></div>
+    </div>
+    <div class="harvest-field harvest-avg">
+      <label>１枚平均</label>
+      <div class="harvest-avg-val"><span id="f-harvest-avg">-</span><span class="harvest-unit">g</span></div>
+    </div>
   </div>
 
   <div class="sec-label">メモ</div>
@@ -452,7 +478,7 @@ async function loadShelfLogs() {
 async function loadLogsForBatch() {
   const { data: rows, error } = await sb
     .from('wasabi_logs')
-    .select('log_date, memo, photos')
+    .select('log_date, memo, photos, harvest_count, harvest_weight')
     .eq('variety_idx', currentVariety)
     .eq('batch_idx', currentBatch)
     .order('log_date');
@@ -464,7 +490,9 @@ async function loadLogsForBatch() {
   rows.forEach(r => {
     b.logs[r.log_date] = {
       memo: r.memo || '',
-      photos: r.photos || []
+      photos: r.photos || [],
+      harvestCount: r.harvest_count ?? '',
+      harvestWeight: r.harvest_weight ?? ''
     };
   });
 }
@@ -548,9 +576,12 @@ function render() {
     renderMilestoneBanner(b, key);
   }
 
-  // Variety fields (memo + photos only)
+  // Variety fields (memo + photos + harvest)
   const vlog = b?.logs[key] || {};
   document.getElementById('f-memo').value = vlog.memo ?? '';
+  document.getElementById('f-harvest-count').value = vlog.harvestCount ?? '';
+  document.getElementById('f-harvest-weight').value = vlog.harvestWeight ?? '';
+  calcHarvestAvg();
   currentPhotos = [...(vlog.photos || [])];
   renderPhotos();
 
@@ -671,10 +702,22 @@ function renderHistory() {
       </div>
       ${vals.length?`<div class="hist-vals">${vals.map(s=>`<span class="hist-val">${s}</span>`).join('')}</div>`:''}
       ${waterParts.length?`<div class="hist-water">追水: ${waterParts.join(' / ')}</div>`:''}
+      ${vlog.harvestCount ? `<div class="hist-harvest">刈取 <strong>${vlog.harvestCount}枚</strong> / ${vlog.harvestWeight ? `<strong>${vlog.harvestWeight}g</strong>` : '-'} / 平均 <strong>${(vlog.harvestCount > 0 && vlog.harvestWeight > 0) ? (vlog.harvestWeight / vlog.harvestCount).toFixed(1) : '-'}g</strong></div>` : ''}
       ${vlog.memo?`<div class="hist-memo">${escHtml(vlog.memo)}</div>`:''}
       ${photosHtml?`<div class="hist-photos">${photosHtml}</div>`:''}
     </div>`;
   }).join('');
+}
+
+function calcHarvestAvg() {
+  const count = parseFloat(document.getElementById('f-harvest-count').value);
+  const weight = parseFloat(document.getElementById('f-harvest-weight').value);
+  const avg = document.getElementById('f-harvest-avg');
+  if (count > 0 && weight > 0) {
+    avg.textContent = (weight / count).toFixed(1);
+  } else {
+    avg.textContent = '-';
+  }
 }
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -742,12 +785,16 @@ async function saveVarietyLog() {
   btn.disabled = true;
 
   const key = dateKey(currentDate);
+  const harvestCount = document.getElementById('f-harvest-count').value;
+  const harvestWeight = document.getElementById('f-harvest-weight').value;
   const rec = {
     variety_idx: currentVariety,
     batch_idx: currentBatch,
     log_date: key,
     memo: document.getElementById('f-memo').value,
     photos: currentPhotos,
+    harvest_count: harvestCount !== '' ? Number(harvestCount) : null,
+    harvest_weight: harvestWeight !== '' ? Number(harvestWeight) : null,
     saved_at: new Date().toISOString()
   };
 
@@ -756,7 +803,7 @@ async function saveVarietyLog() {
       .upsert(rec, { onConflict: 'variety_idx,batch_idx,log_date' });
     if (error) throw error;
     const b = getBatch();
-    b.logs[key] = { memo: rec.memo, photos: [...currentPhotos] };
+    b.logs[key] = { memo: rec.memo, photos: [...currentPhotos], harvestCount: harvestCount, harvestWeight: harvestWeight };
     btn.textContent = '保存しました ✓';
     btn.classList.add('saved');
     setTimeout(() => { btn.textContent = '品種の記録を保存'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
