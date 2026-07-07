@@ -812,7 +812,7 @@ function updateWorkInstructions() {
     bg = '#FFF8E1'; border = '#8A6000'; titleColor = '#8A6000';
     title = '確認：ECが高い（EC: ' + ec + '）';
     steps = ['追水して様子を見る', 'しばらく後にECを再計測する'];
-  } else if (ph > 6.5) {
+  } else if (ph >= 6.5) {
     // ケース3: EC正常・pH高い
     bg = '#FFF8E1'; border = '#8A6000'; titleColor = '#8A6000';
     title = '⚠️ pH高め・追水＋ダウン剤（EC: ' + ec + ' / pH: ' + ph + '）';
