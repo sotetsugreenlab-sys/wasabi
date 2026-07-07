@@ -777,51 +777,65 @@ function updateWorkInstructions() {
   const wt = parseFloat(document.getElementById('f-water-temp').value);
   const el = document.getElementById('work-instructions');
 
-  if (isNaN(ec) && isNaN(ph)) { el.innerHTML = ''; return; }
+  // 両方入力されるまで表示しない
+  if (isNaN(ec) || isNaN(ph)) { el.innerHTML = ''; return; }
 
   let bg, border, titleColor, title, steps, note = '';
 
-  if (!isNaN(ec) && ec <= 1.0) {
+  if (ec <= 1.0) {
+    // ケース1: EC補充作業
     bg = '#FEF0EE'; border = '#B84033'; titleColor = '#B84033';
-    title = '⚠️ EC補充作業が必要です（EC: ' + ec + '）';
+    title = '⚠️ EC補充作業（EC: ' + ec + ' / pH: ' + ph + '）';
+    const wtStep = (!isNaN(wt) && wt >= 20)
+      ? '⚠️ 水温が<strong>' + wt + '°C</strong> → <strong>保冷パックを入れる</strong>'
+      : '水温を確認する（20°C以上なら保冷パックを入れる）';
+    const phStep = ph >= 6.5
+      ? 'pHが<strong>' + ph + '</strong>（6.5以上）→ <strong>ダウン剤を10cc加える</strong>'
+      : ph <= 5.5
+        ? 'pHが<strong>' + ph + '</strong>（5.5以下）→ <strong>そのままにしておく</strong>'
+        : 'pHが<strong>' + ph + '</strong>（規定値内）→ <strong>そのままにしておく</strong>';
     steps = [
       'タイマーを切る',
-      'ゼロ段棚の液肥を排水する（残り<strong>40L</strong>になるまで）',
-      '水を加えてゼロ段棚を<strong>80L</strong>にする（＝約40L追加）',
-      !isNaN(wt) && wt >= 20
-        ? '⚠️ 水温が<strong>' + wt + '°C</strong>のため<strong>保冷パックを入れる</strong>'
-        : '水温を確認する（20°C以上なら保冷パックを入れる）',
+      'ゼロ段桝の残りが<strong>40L</strong>になるように液肥を排水する',
+      'ゼロ段桝の水量が<strong>80L</strong>になるように水を加える',
+      wtStep,
       '粉末肥料を入れる：<strong>さらさら 24g・べとべと 16g</strong>',
       '<strong>ミネラル 4mL</strong>を加える',
-      'よく攪拌する',
-      'ECが規定範囲（<strong>0.8〜1.2</strong>）に入ったことを確認する',
+      '攪拌する',
+      'タイマーを操作して<strong>3回強制的</strong>にまわす',
+      'ECが規定範囲（<strong>0.8〜1.2</strong>）にあることを確認する',
+      phStep,
       'タイマーを入れる'
     ];
-  } else if (!isNaN(ec) && ec > 1.2) {
+  } else if (ec > 1.2) {
+    // ケース外: EC高すぎ
     bg = '#FFF8E1'; border = '#8A6000'; titleColor = '#8A6000';
-    title = '確認：ECが高めです（EC: ' + ec + '）';
+    title = '確認：ECが高い（EC: ' + ec + '）';
     steps = ['追水して様子を見る', 'しばらく後にECを再計測する'];
-  } else if (!isNaN(ph) && ph >= 6.5) {
+  } else if (ph > 6.5) {
+    // ケース3: EC正常・pH高い
     bg = '#FFF8E1'; border = '#8A6000'; titleColor = '#8A6000';
-    title = '⚠️ pH調整が必要です（pH: ' + ph + '）';
+    title = '⚠️ pH高め・追水＋ダウン剤（EC: ' + ec + ' / pH: ' + ph + '）';
     steps = [
       'タイマーを切る',
-      '追水用のミネラル水を作る（水<strong>10L</strong>に対しミネラル<strong>1mL</strong>）',
-      'ゼロ段棚を規定量（<strong>80L</strong>）まで追加',
-      'pHが6.5以上であることを再度確認し、<strong>ダウン剤 10cc</strong>を入れる',
+      '追水分のミネラル水を作る（水<strong>10L</strong>に対しミネラル<strong>1mL</strong>）',
+      '水を規定量（<strong>80L</strong>）まで追加する',
+      'pHが6.5以上であることを再度確認して<strong>ダウン剤を10cc入れる</strong>',
       'タイマーを入れる'
     ];
-  } else if (!isNaN(ph) && ph < 5.5) {
-    bg = '#FFF8E1'; border = '#8A6000'; titleColor = '#8A6000';
-    title = '確認：pHが低めです（pH: ' + ph + '）';
-    steps = ['追水して様子を見る', 'しばらく後にpHを再計測する'];
-  } else {
+  } else if (ph < 5.5) {
+    // ケース4: EC正常・pH低い
     bg = '#E0F5F4'; border = '#0B7A75'; titleColor = '#0B7A75';
-    title = '✅ 追水のみ（EC・pH 正常）';
+    title = 'pH低め・そのままにしておく（EC: ' + ec + ' / pH: ' + ph + '）';
+    steps = ['そのままにしておく'];
+  } else {
+    // ケース2: EC・pHともに正常
+    bg = '#E0F5F4'; border = '#0B7A75'; titleColor = '#0B7A75';
+    title = '✅ 追水のみ（EC: ' + ec + ' / pH: ' + ph + '）';
     steps = [
       'タイマーを切る',
-      '追水用のミネラル水を作る（水<strong>10L</strong>に対しミネラル<strong>1mL</strong>）',
-      'ゼロ段棚を規定量（<strong>80L</strong>）まで追加',
+      '追水分のミネラル水を作る（水<strong>10L</strong>に対しミネラル<strong>1mL</strong>）',
+      '水を規定量（<strong>80L</strong>）まで追加する',
       'タイマーを入れる'
     ];
     if (!isNaN(wt) && wt >= 20) note = '⚠️ 水温が<strong>' + wt + '°C</strong>です。保冷パックの追加を検討してください。';
