@@ -50,6 +50,9 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
 .water-label { font-size: 13px; color: #555; flex: 0 0 60px; }
 .water-row input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 7px 10px; font-size: 16px; background: #fff; outline: none; min-width: 0; }
 .water-unit { font-size: 12px; color: #aaa; flex: 0 0 18px; }
+.mineral-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding: 8px 0 0; border-top: 1px dashed #e8e8e8; }
+.mineral-label { font-size: 13px; color: #0B7A75; flex: 0 0 60px; font-weight: 500; }
+.mineral-val { font-size: 20px; font-weight: 700; color: #0B7A75; flex: 1; }
 
 .save-btn { width: 100%; padding: 14px; background: #0B7A75; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 .save-btn:active { background: #096560; }
@@ -225,13 +228,13 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
   <div class="water-section">
     <div class="water-row">
       <span class="water-label">水</span>
-      <input type="number" inputmode="decimal" step="0.1" id="f-water" placeholder="0">
+      <input type="number" inputmode="decimal" step="0.1" id="f-water" placeholder="0" oninput="calcMineral()">
       <span class="water-unit">L</span>
     </div>
-    <div class="water-row">
-      <span class="water-label">液肥液</span>
-      <input type="number" inputmode="decimal" step="0.1" id="f-nutrient" placeholder="0">
-      <span class="water-unit">L</span>
+    <div class="mineral-row" id="mineral-row" style="display:none">
+      <span class="mineral-label">ミネラル</span>
+      <span class="mineral-val" id="mineral-val">-</span>
+      <span class="water-unit">mL</span>
     </div>
   </div>
 
@@ -609,7 +612,7 @@ function render() {
   document.getElementById('f-ph').value = shelf.ph ?? '';
   document.getElementById('f-ec').value = shelf.ec ?? '';
   document.getElementById('f-water').value = shelf.water ?? '';
-  document.getElementById('f-nutrient').value = shelf.nutrient ?? '';
+  calcMineral();
   currentStaff = shelf.staff || '';
   renderStaffChips();
 
@@ -748,8 +751,10 @@ function renderHistory() {
     if (shelf.ph)       vals.push(`pH<strong>${shelf.ph}</strong>`);
     if (shelf.ec)       vals.push(`EC<strong>${shelf.ec}</strong>`);
     const waterParts = [];
-    if (shelf.water    && parseFloat(shelf.water)    > 0) waterParts.push(`水 ${shelf.water}L`);
-    if (shelf.nutrient && parseFloat(shelf.nutrient) > 0) waterParts.push(`液肥 ${shelf.nutrient}L`);
+    if (shelf.water && parseFloat(shelf.water) > 0) {
+      const mineral = (parseFloat(shelf.water) / 10).toFixed(1);
+      waterParts.push(`水 ${shelf.water}L（ミネラル ${mineral}mL）`);
+    }
     const photosHtml = (vlog.photos||[]).map(src =>
       `<img src="${src}" onclick="openViewer('${src.replace(/'/g,"\\'")}',event)">`).join('');
     return `<div class="hist-card${k===todayKey?' active-date':''}" onclick="jumpToDate('${k}')">
@@ -829,6 +834,17 @@ function updateWorkInstructions() {
   </div>`;
 }
 
+function calcMineral() {
+  const water = parseFloat(document.getElementById('f-water').value);
+  const row = document.getElementById('mineral-row');
+  if (!isNaN(water) && water > 0) {
+    document.getElementById('mineral-val').textContent = (water / 10).toFixed(1);
+    row.style.display = 'flex';
+  } else {
+    row.style.display = 'none';
+  }
+}
+
 function calcHarvestAvg() {
   const count = parseFloat(document.getElementById('f-harvest-count').value);
   const weight = parseFloat(document.getElementById('f-harvest-weight').value);
@@ -868,7 +884,6 @@ async function saveShelfLog() {
     ph: document.getElementById('f-ph').value,
     ec: document.getElementById('f-ec').value,
     water: document.getElementById('f-water').value,
-    nutrient: document.getElementById('f-nutrient').value,
     saved_at: new Date().toISOString()
   };
 
