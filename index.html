@@ -481,7 +481,7 @@ async function loadShelfLogs() {
 async function loadLogsForBatch() {
   const { data: rows, error } = await sb
     .from('wasabi_logs')
-    .select('log_date, memo, photos, harvest_count, harvest_weight')
+    .select('log_date, memo, harvest_count, harvest_weight')
     .eq('variety_idx', currentVariety)
     .eq('batch_idx', currentBatch)
     .order('log_date');
@@ -493,11 +493,21 @@ async function loadLogsForBatch() {
   rows.forEach(r => {
     b.logs[r.log_date] = {
       memo: r.memo || '',
-      photos: r.photos || [],
       harvestCount: r.harvest_count ?? '',
       harvestWeight: r.harvest_weight ?? ''
     };
   });
+}
+
+async function loadPhotosForDate(key) {
+  const { data: row } = await sb
+    .from('wasabi_logs')
+    .select('photos')
+    .eq('variety_idx', currentVariety)
+    .eq('batch_idx', currentBatch)
+    .eq('log_date', key)
+    .maybeSingle();
+  return row?.photos || [];
 }
 
 // ---- Navigation ----
@@ -579,14 +589,15 @@ function render() {
     renderMilestoneBanner(b, key);
   }
 
-  // Variety fields (memo + photos + harvest)
+  // Variety fields (memo + harvest)
   const vlog = b?.logs[key] || {};
   document.getElementById('f-memo').value = vlog.memo ?? '';
   document.getElementById('f-harvest-count').value = vlog.harvestCount ?? '';
   document.getElementById('f-harvest-weight').value = vlog.harvestWeight ?? '';
   calcHarvestAvg();
-  currentPhotos = [...(vlog.photos || [])];
+  currentPhotos = [];
   renderPhotos();
+  loadPhotosForDate(key).then(photos => { currentPhotos = photos; renderPhotos(); });
 
   const varBtn = document.getElementById('save-variety-btn');
   varBtn.textContent = '品種の記録を保存';
@@ -806,7 +817,7 @@ async function saveVarietyLog() {
       .upsert(rec, { onConflict: 'variety_idx,batch_idx,log_date' });
     if (error) throw error;
     const b = getBatch();
-    b.logs[key] = { memo: rec.memo, photos: [...currentPhotos], harvestCount: harvestCount, harvestWeight: harvestWeight };
+    b.logs[key] = { memo: rec.memo, harvestCount: harvestCount, harvestWeight: harvestWeight };
     btn.textContent = '保存しました ✓';
     btn.classList.add('saved');
     setTimeout(() => { btn.textContent = '品種の記録を保存'; btn.classList.remove('saved'); btn.disabled = false; }, 2000);
