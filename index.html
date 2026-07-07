@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="わさび">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: sans-serif; background: #fff; padding: 1rem 0.5rem 3rem; max-width: 480px; margin: 0 auto; }
@@ -115,10 +116,13 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
 .badge-arrival { background: #FFF8E1; color: #8A6000; }
 .badge-transplant { background: #E0F5F4; color: #0B7A75; }
 
-.export-section { margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0ed; display: flex; gap: 8px; }
-.export-btn { flex: 1; padding: 11px 8px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; }
+.export-section { margin-top: 24px; padding-top: 16px; border-top: 1px solid #f0f0ed; display: flex; flex-wrap: wrap; gap: 8px; }
+.export-btn { flex: 1; min-width: calc(50% - 4px); padding: 11px 8px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; }
 .btn-csv { background: #E0F5F4; color: #0B7A75; border: 1.5px solid #0B7A75; }
+.btn-photos { background: #EEF0FE; color: #3B4BB8; border: 1.5px solid #3B4BB8; }
 .btn-delete-month { background: #FEF0EE; color: #B84033; border: 1.5px solid #B84033; }
+.admin-pw-error { color: #B84033; font-size: 12px; margin-top: 6px; min-height: 16px; }
+.dl-status { font-size: 13px; color: #0B7A75; text-align: center; margin-top: 12px; min-height: 20px; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
 .modal-overlay.hidden { display: none; }
@@ -280,8 +284,26 @@ input[type=time] { border: 1px solid #e0e0e0; border-radius: 8px; padding: 5px 1
 <div id="history-list"></div>
 
 <div class="export-section">
-  <button class="export-btn btn-csv" onclick="exportCSV()">CSVエクスポート</button>
-  <button class="export-btn btn-delete-month" onclick="openMonthDelete()">月データを削除</button>
+  <button class="export-btn btn-csv" onclick="requireAdmin('csv')">CSVエクスポート</button>
+  <button class="export-btn btn-photos" onclick="requireAdmin('photos')">写真をダウンロード</button>
+  <button class="export-btn btn-delete-month" onclick="requireAdmin('delete')">月データを削除</button>
+</div>
+
+<!-- Admin password modal -->
+<div class="modal-overlay hidden" id="admin-modal">
+  <div class="modal">
+    <div class="modal-title">🔒 管理者認証</div>
+    <div class="modal-row">
+      <label>パスワード</label>
+      <input type="password" id="admin-pw-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')submitAdminPassword()">
+    </div>
+    <div class="admin-pw-error" id="admin-pw-error"></div>
+    <div class="dl-status" id="dl-status"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeAdminModal()">キャンセル</button>
+      <button class="modal-save" onclick="submitAdminPassword()">確認</button>
+    </div>
+  </div>
 </div>
 
 <!-- Settings modal -->
@@ -939,6 +961,104 @@ function exportCSV() {
   const now = new Date();
   a.download = `wasabi_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.csv`;
   a.click(); URL.revokeObjectURL(url);
+}
+
+// ---- Admin auth ----
+
+let adminUnlocked = false;
+let pendingAdminAction = null;
+
+function requireAdmin(action) {
+  if (adminUnlocked) { runAdminAction(action); return; }
+  pendingAdminAction = action;
+  document.getElementById('admin-pw-input').value = '';
+  document.getElementById('admin-pw-error').textContent = '';
+  document.getElementById('dl-status').textContent = '';
+  document.getElementById('admin-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('admin-pw-input').focus(), 100);
+}
+
+function closeAdminModal() {
+  document.getElementById('admin-modal').classList.add('hidden');
+  pendingAdminAction = null;
+}
+
+function submitAdminPassword() {
+  const pw = document.getElementById('admin-pw-input').value;
+  if (pw === 'ecode2355') {
+    adminUnlocked = true;
+    const action = pendingAdminAction;
+    pendingAdminAction = null;
+    if (action === 'photos') {
+      runAdminAction(action);
+    } else {
+      document.getElementById('admin-modal').classList.add('hidden');
+      runAdminAction(action);
+    }
+  } else {
+    document.getElementById('admin-pw-error').textContent = 'パスワードが違います';
+  }
+}
+
+function runAdminAction(action) {
+  if (action === 'csv') exportCSV();
+  else if (action === 'photos') downloadPhotosZip();
+  else if (action === 'delete') openMonthDelete();
+}
+
+async function downloadPhotosZip() {
+  const statusEl = document.getElementById('dl-status');
+  const errEl = document.getElementById('admin-pw-error');
+  statusEl.textContent = '準備中...';
+  errEl.textContent = '';
+
+  try {
+    const zip = new JSZip();
+    const VARIETY_NAMES = ['飛河', '正緑'];
+    let done = 0;
+
+    for (const [vi, v] of data.entries()) {
+      for (const [bi] of v.batches.entries()) {
+        const { data: dateRows, error: e1 } = await sb.from('wasabi_logs')
+          .select('log_date')
+          .eq('variety_idx', vi).eq('batch_idx', bi)
+          .order('log_date');
+        if (e1) throw e1;
+
+        for (const { log_date } of (dateRows || [])) {
+          done++;
+          statusEl.textContent = `写真を取得中... (${done}件目)`;
+          const { data: row, error: e2 } = await sb.from('wasabi_logs')
+            .select('photos')
+            .eq('variety_idx', vi).eq('batch_idx', bi)
+            .eq('log_date', log_date)
+            .maybeSingle();
+          if (e2) throw e2;
+          (row?.photos || []).forEach((photo, idx) => {
+            const base64 = photo.split(',')[1];
+            if (!base64) return;
+            const fname = `写真/${VARIETY_NAMES[vi]}/${log_date}_第${bi+1}回_${String(idx+1).padStart(2,'0')}.jpg`;
+            zip.file(fname, base64, { base64: true });
+          });
+        }
+      }
+    }
+
+    statusEl.textContent = 'ZIPを作成中...';
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const now = new Date();
+    a.download = `wasabi_photos_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.zip`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusEl.textContent = 'ダウンロード完了！';
+    setTimeout(() => { document.getElementById('admin-modal').classList.add('hidden'); }, 2000);
+  } catch (e) {
+    statusEl.textContent = '';
+    errEl.textContent = 'エラー: ' + e.message;
+  }
 }
 
 // ---- Month delete ----
